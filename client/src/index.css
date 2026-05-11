@@ -72,3 +72,12 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #3a3a3a;
 }
+
+/* Nested list spacing in chat messages */
+.chat-content ul ul,
+.chat-content ol ol,
+.chat-content ul ol,
+.chat-content ol ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}

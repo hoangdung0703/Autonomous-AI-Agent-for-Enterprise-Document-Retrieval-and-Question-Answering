@@ -33,7 +33,12 @@ export function useAuth() {
       localStorage.setItem('token', data.token);
       const decoded = jwtDecode(data.token);
       setUser(decoded);
-      navigate('/');
+      // Redirect to onboarding if user hasn't joined an org yet
+      if (!decoded.organizationId) {
+        navigate('/onboarding');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       throw error.response?.data?.message || 'Login failed';
     }
@@ -45,5 +50,21 @@ export function useAuth() {
     navigate('/login');
   }, [navigate]);
 
-  return { user, loading, login, logout };
+  // Called after org create/join — store fresh token and update user state
+  const updateToken = useCallback((newToken) => {
+    localStorage.setItem('token', newToken);
+    const decoded = jwtDecode(newToken);
+    setUser(decoded);
+  }, []);
+
+  return {
+    user,
+    loading,
+    login,
+    logout,
+    updateToken,
+    // Convenience accessors decoded from JWT
+    organizationId: user?.organizationId || null,
+    organizationName: user?.organizationName || null,
+  };
 }

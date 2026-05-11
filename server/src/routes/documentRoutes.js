@@ -2,15 +2,18 @@ const express = require('express');
 const documentController = require('../controllers/documentController');
 const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
+const orgMiddleware = require('../middleware/orgMiddleware');
 const uploadMiddleware = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
-// All document routes are admin only
-router.use(authMiddleware, adminMiddleware);
+// GET / — any org member can read documents (for NewConversationModal document picker)
+router.get('/', authMiddleware, orgMiddleware, documentController.getAll);
 
-router.post('/upload', uploadMiddleware.single('file'), documentController.upload);
-router.get('/', documentController.getAll);
-router.delete('/:id', documentController.deleteDocument);
+// POST /upload — admin + org member only
+router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMiddleware.single('file'), documentController.upload);
+
+// DELETE /:id — admin + org member only
+router.delete('/:id', authMiddleware, adminMiddleware, orgMiddleware, documentController.deleteDocument);
 
 module.exports = router;

@@ -43,14 +43,27 @@ class AuthService {
     return { user: userResponse, token };
   }
 
-  generateToken(user) {
+  generateToken(user, organizationName = null) {
     const payload = {
       id: user._id,
       email: user.email,
       role: user.role,
       name: user.name,
+      organizationId: user.organizationId || null,
+      organizationName: organizationName,
     };
     return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
+  }
+
+  async refreshTokenForUser(userId) {
+    const user = await User.findById(userId).populate('organizationId');
+    if (!user) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    const orgName = user.organizationId?.name || null;
+    return this.generateToken(user, orgName);
   }
 
   sanitizeUser(user) {

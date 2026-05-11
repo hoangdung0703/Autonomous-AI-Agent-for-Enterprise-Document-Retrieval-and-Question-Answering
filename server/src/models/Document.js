@@ -31,6 +31,11 @@ const documentSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    required: true,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Document', documentSchema);

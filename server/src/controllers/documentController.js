@@ -26,6 +26,7 @@ class DocumentController {
         mimeType: mimetype,
         size,
         uploadedBy: req.user.id,
+        organizationId: req.organizationId,
         status: 'processing'
       });
 
@@ -49,7 +50,7 @@ class DocumentController {
 
   async getAll(req, res, next) {
     try {
-      const documents = await Document.find()
+      const documents = await Document.find({ organizationId: req.organizationId })
         .populate('uploadedBy', 'name email role')
         .sort({ createdAt: -1 });
       
@@ -67,6 +68,12 @@ class DocumentController {
       if (!docRecord) {
         res.status(404);
         throw new Error('Document not found');
+      }
+
+      // Verify document belongs to user's organization
+      if (docRecord.organizationId?.toString() !== req.organizationId?.toString()) {
+        res.status(403);
+        throw new Error('Access denied');
       }
 
       // Delete from ChromaDB

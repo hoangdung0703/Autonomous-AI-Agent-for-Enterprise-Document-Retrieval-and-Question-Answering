@@ -36,6 +36,15 @@ class AuthController {
       next(error);
     }
   }
+
+  async refreshToken(req, res, next) {
+    try {
+      const token = await authService.refreshTokenForUser(req.user.id);
+      res.status(200).json({ token });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

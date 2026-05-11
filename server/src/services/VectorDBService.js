@@ -45,13 +45,23 @@ class VectorDBService {
     });
   }
 
-  async queryCollection(queryEmbedding, nResults = 5) {
+  async queryCollection(queryEmbedding, nResults = 5, documentIds = []) {
     if (!this.collection) throw new Error('Chroma collection not initialized');
 
-    const results = await this.collection.query({
+    const queryParams = {
       queryEmbeddings: [queryEmbedding],
-      nResults: nResults
-    });
+      nResults,
+    };
+
+    // Apply document-scoped filter when documentIds are provided
+    if (documentIds.length === 1) {
+      // Use $eq for single value — more compatible with older ChromaDB clients
+      queryParams.where = { documentId: { $eq: documentIds[0].toString() } };
+    } else if (documentIds.length > 1) {
+      queryParams.where = { documentId: { $in: documentIds.map(id => id.toString()) } };
+    }
+
+    const results = await this.collection.query(queryParams);
 
     if (!results || !results.documents || results.documents.length === 0 || results.documents[0].length === 0) {
       return [];

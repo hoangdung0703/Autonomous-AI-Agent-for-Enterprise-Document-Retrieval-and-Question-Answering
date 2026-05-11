@@ -15,8 +15,8 @@ class EmbeddingService {
     }
     
     this.splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 512,
-      chunkOverlap: 50,
+      chunkSize: 1500,
+      chunkOverlap: 200,
     });
   }
 
@@ -33,10 +33,16 @@ class EmbeddingService {
         throw new Error('Document resulted in 0 chunks.');
       }
 
-      // Filter out chunks that are too short or mostly whitespace
+      // Filter out chunks that are too short, mostly whitespace, or lack meaningful text
       const validChunks = chunks.filter(chunk => {
-        const cleaned = chunk.replace(/\s+/g, ' ').trim();
-        return cleaned.length >= 50;
+        const textContent = typeof chunk === 'string' ? chunk : chunk.pageContent;
+        const cleaned = textContent.replace(/\s+/g, ' ').trim();
+        if (cleaned.length < 50) return false;
+        // Skip chunks where meaningful text ratio is too low
+        const letters = (cleaned.match(/\p{L}/gu) || []).length;
+        const ratio = letters / cleaned.length;
+        if (ratio < 0.3) return false; // less than 30% actual letters = skip
+        return true;
       });
 
       console.log(`[EmbeddingService] Skipped ${chunks.length - validChunks.length} invalid chunks out of ${chunks.length} total.`);
@@ -45,8 +51,8 @@ class EmbeddingService {
         throw new Error('All chunks were filtered out as invalid (too short or whitespace-only).');
       }
 
-      // Embed with retry: up to 2 retries per chunk, 2000ms between retries
-      const embedWithRetry = async (chunk, maxRetries = 2) => {
+      // Embed with retry: up to 3 retries per chunk, 3000ms between retries
+      const embedWithRetry = async (chunk, maxRetries = 3) => {
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
           try {
             const vector = await embedText(chunk, env.GOOGLE_API_KEY);
@@ -54,7 +60,7 @@ class EmbeddingService {
           } catch (err) {
             if (attempt < maxRetries) {
               console.warn(`[EmbeddingService] Retry ${attempt + 1}/${maxRetries} for chunk after error: ${err.message}`);
-              await new Promise(r => setTimeout(r, 2000));
+              await new Promise(r => setTimeout(r, 3000));
             } else {
               throw err;
             }
@@ -62,9 +68,9 @@ class EmbeddingService {
         }
       };
 
-      // Generate embeddings in batches of 3 with 1000ms delay after every batch
+      // Generate embeddings in batches of 2 with 2000ms delay after every batch
       let embeddingsList = [];
-      const batchSize = 3;
+      const batchSize = 2;
 
       try {
         for (let i = 0; i < validChunks.length; i += batchSize) {
@@ -75,7 +81,7 @@ class EmbeddingService {
           embeddingsList.push(...batchResults);
 
           // Rate-limit delay after every batch
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 2000));
         }
 
         console.log(`[DEBUG] embedDocuments returned list of size: ${embeddingsList?.length}`);

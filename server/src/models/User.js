@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    default: null,
+  },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 module.exports = mongoose.model('User', userSchema);

@@ -11,15 +11,23 @@ class RAGService {
       temperature: 0, // Deterministic answers
     });
 
-    this.systemPrompt = "You are a document assistant. Answer ONLY using the provided context. If the context does not contain the answer, respond: 'I could not find this information in the uploaded documents.' Do not use outside knowledge.";
+    this.systemPrompt = `You are a document assistant for enterprise knowledge management.
+Answer the user's question using ONLY the provided context chunks below.
+Rules:
+- Be thorough and comprehensive — do not summarize too briefly
+- If the question asks to "summarize" or "list", structure your answer with bullet points
+- Cite specific details, names, dates, and numbers found in the context
+- If the context contains both Vietnamese and English, prefer answering in the same language as the question
+- If the context does not contain enough information, say: "I could not find sufficient information about this in the uploaded documents."
+- Never use outside knowledge`;
   }
 
-  async query(question) {
+  async query(question, documentIds = []) {
     // 1. Embed the query
     const queryEmbedding = await embedText(question, env.GOOGLE_API_KEY);
 
-    // 2. Retrieve top chunks from ChromaDB
-    const retrievedChunks = await vectorDB.queryCollection(queryEmbedding, 5);
+    // 2. Retrieve top chunks from ChromaDB, optionally filtered by documentIds
+    const retrievedChunks = await vectorDB.queryCollection(queryEmbedding, 8, documentIds);
 
     // If no chunks are retrieved, fallback immediately or let LLM decide?
     // Let's pass it to LLM so it behaves exactly according to system prompt.

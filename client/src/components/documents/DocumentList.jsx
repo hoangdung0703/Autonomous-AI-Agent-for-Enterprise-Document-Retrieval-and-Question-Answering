@@ -1,9 +1,17 @@
+import { useState } from 'react';
 import { Trash2, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import StatusBadge from './StatusBadge';
 import SkeletonRow from '../ui/SkeletonRow';
+import Button from '../ui/Button';
 
 export default function DocumentList({ documents, loading, onDelete }) {
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const handleConfirmDelete = async (id) => {
+    await onDelete(id);
+    setDeleteConfirm(null);
+  };
   if (loading) {
     return (
       <div className="bg-background-secondary rounded-xl border border-border-subtle p-6 h-full flex flex-col">
@@ -68,7 +76,7 @@ export default function DocumentList({ documents, loading, onDelete }) {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => onDelete(doc._id)}
+                      onClick={() => setDeleteConfirm(doc._id)}
                       className="p-2 text-text-muted hover:text-status-failed hover:bg-status-failed-bg rounded transition-colors"
                       title="Delete document"
                     >
@@ -81,6 +89,25 @@ export default function DocumentList({ documents, loading, onDelete }) {
           </table>
         )}
       </div>
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-background-elevated border border-border-subtle rounded-xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-text-primary font-semibold mb-2">Delete Document</h3>
+            <p className="text-text-secondary text-sm mb-6">
+              Are you sure you want to delete this document? This will also remove all its embedded vectors and cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={() => handleConfirmDelete(deleteConfirm)}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.get('/refresh-token', authMiddleware, authController.refreshToken.bind(authController));
 
 // Test routes for verification
 router.get('/protected', authMiddleware, (req, res) => {
