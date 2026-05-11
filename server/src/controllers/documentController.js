@@ -2,6 +2,7 @@ const Document = require('../models/Document');
 const storageService = require('../services/StorageService');
 const embeddingService = require('../services/EmbeddingService');
 const vectorDB = require('../services/VectorDBService');
+const { cache } = require('../utils/queryCache');
 
 class DocumentController {
   async upload(req, res, next) {
@@ -102,6 +103,10 @@ class DocumentController {
 
       // Delete record
       await Document.findByIdAndDelete(docId);
+
+      // Invalidate all cached RAG queries since the document set changed
+      cache.flushAll();
+      console.log('[DocumentController] Cache flushed after document deletion.');
 
       res.status(200).json({ message: 'Document deleted successfully' });
     } catch (error) {

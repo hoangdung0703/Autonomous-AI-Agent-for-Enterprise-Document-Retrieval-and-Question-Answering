@@ -1,5 +1,6 @@
 const { ChromaClient } = require('chromadb');
 const env = require('../config/env');
+const logger = require('../utils/logger');
 
 class VectorDBService {
   constructor() {
@@ -12,15 +13,15 @@ class VectorDBService {
     try {
       // Ping chroma to verify connection
       await this.client.heartbeat();
-      console.log('ChromaDB Connected successfully.');
+      logger.info('ChromaDB Connected successfully.');
       
       // Attempt to get or create the collection to ensure it's ready
       this.collection = await this.client.getOrCreateCollection({
         name: env.CHROMA_COLLECTION
       });
-      console.log(`ChromaDB Collection '${env.CHROMA_COLLECTION}' ready.`);
+      logger.info(`ChromaDB Collection '${env.CHROMA_COLLECTION}' ready.`);
     } catch (error) {
-      console.error(`ChromaDB Connection Error: ${error.message}`);
+      logger.error(`ChromaDB Connection Error: ${error.message}`);
       // Don't exit process strictly, just log error. Or maybe we should exit?
       // For now, allow server to start even if Chroma is down, but log heavily.
     }

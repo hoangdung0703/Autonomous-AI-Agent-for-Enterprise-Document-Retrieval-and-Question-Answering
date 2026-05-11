@@ -7,6 +7,7 @@ const vectorDB = require('./VectorDBService');
 const Document = require('../models/Document');
 const env = require('../config/env');
 const embedText = require('../utils/embedText');
+const logger = require('../utils/logger');
 
 class EmbeddingService {
   constructor() {
@@ -45,7 +46,7 @@ class EmbeddingService {
         return true;
       });
 
-      console.log(`[EmbeddingService] Skipped ${chunks.length - validChunks.length} invalid chunks out of ${chunks.length} total.`);
+      logger.debug(`[EmbeddingService] Skipped ${chunks.length - validChunks.length} invalid chunks out of ${chunks.length} total.`);
 
       if (validChunks.length === 0) {
         throw new Error('All chunks were filtered out as invalid (too short or whitespace-only).');
@@ -59,7 +60,7 @@ class EmbeddingService {
             return vector;
           } catch (err) {
             if (attempt < maxRetries) {
-              console.warn(`[EmbeddingService] Retry ${attempt + 1}/${maxRetries} for chunk after error: ${err.message}`);
+              logger.warn(`[EmbeddingService] Retry ${attempt + 1}/${maxRetries} for chunk after error: ${err.message}`);
               await new Promise(r => setTimeout(r, 3000));
             } else {
               throw err;
@@ -82,7 +83,7 @@ class EmbeddingService {
           if (result.status === 'fulfilled') {
             successfulEmbeddings.push({ chunk: batch[idx], embedding: result.value });
           } else {
-            console.warn(`[EmbeddingService] Chunk ${i + idx} failed embedding: ${result.reason?.message}`);
+            logger.warn(`[EmbeddingService] Chunk ${i + idx} failed embedding: ${result.reason?.message}`);
           }
         });
 
@@ -91,11 +92,11 @@ class EmbeddingService {
       }
 
       if (successfulEmbeddings.length > 0) {
-        console.log(`[DEBUG] Successfully embedded ${successfulEmbeddings.length} / ${validChunks.length} chunks.`);
+        logger.debug(`[DEBUG] Successfully embedded ${successfulEmbeddings.length} / ${validChunks.length} chunks.`);
       }
       const failedCount = validChunks.length - successfulEmbeddings.length;
       if (failedCount > 0) {
-        console.warn(`[EmbeddingService] Skipped ${failedCount} chunks due to embedding failure.`);
+        logger.warn(`[EmbeddingService] Skipped ${failedCount} chunks due to embedding failure.`);
       }
 
       if (successfulEmbeddings.length === 0) {
@@ -131,7 +132,7 @@ class EmbeddingService {
       await docRecord.save();
 
     } catch (error) {
-      console.error(`Error processing document ${documentId}:`, error);
+      logger.error(`Error processing document ${documentId}: ${error.message}`);
       await Document.findByIdAndUpdate(documentId, { status: 'failed' });
     }
   }

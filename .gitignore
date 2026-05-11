@@ -26,3 +26,6 @@ yarn-error.log*
 
 # Uploads
 uploads/
+test.xlsx
+test_pipeline.js
+test_script.js

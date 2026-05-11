@@ -2,6 +2,8 @@ const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const embedText = require('../utils/embedText');
 const vectorDB = require('./VectorDBService');
 const env = require('../config/env');
+const { cache, generateCacheKey } = require('../utils/queryCache');
+const logger = require('../utils/logger');
 
 class RAGService {
   constructor() {
@@ -23,10 +25,19 @@ Rules:
   }
 
   async query(question, documentIds = []) {
-    // 1. Embed the query
+    // 1. Check cache first
+    const cacheKey = generateCacheKey(question, documentIds);
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      logger.debug(`[RAGService] Cache hit for key: ${cacheKey.slice(0, 60)}...`);
+      return cached;
+    }
+    logger.debug(`[RAGService] Cache miss — running RAG pipeline.`);
+
+    // 2. Embed the query
     const queryEmbedding = await embedText(question, env.GOOGLE_API_KEY);
 
-    // 2. Retrieve top chunks from ChromaDB, optionally filtered by documentIds
+    // 3. Retrieve top chunks from ChromaDB, optionally filtered by documentIds
     const retrievedChunks = await vectorDB.queryCollection(queryEmbedding, 8, documentIds);
 
     // If no chunks are retrieved, fallback immediately or let LLM decide?
@@ -35,7 +46,7 @@ Rules:
       return `--- Chunk ${index + 1} ---\n${chunk.chunkContent}\n`;
     }).join('\n');
 
-    // 3. Build prompt
+    // 4. Build prompt
     const prompt = `
 ${this.systemPrompt}
 
@@ -46,10 +57,10 @@ USER QUESTION:
 ${question}
 `;
 
-    // 4. Call Gemini
+    // 5. Call Gemini
     const response = await this.llm.invoke(prompt);
 
-    // 5. Build sources without exposing raw content
+    // 6. Build sources without exposing raw content
     const sources = retrievedChunks.map(chunk => ({
       fileName: chunk.metadata.fileName,
       chunkIndex: chunk.metadata.chunkIndex
@@ -66,10 +77,16 @@ ${question}
       }
     }
 
-    return {
+    const result = {
       answer: response.content,
       sources: uniqueSources
     };
+
+    // 7. Store in cache
+    cache.set(cacheKey, result);
+    logger.debug(`[RAGService] Cache stored for key: ${cacheKey.slice(0, 60)}...`);
+
+    return result;
   }
 }
 

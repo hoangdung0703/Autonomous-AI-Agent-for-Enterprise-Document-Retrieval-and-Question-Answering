@@ -2,6 +2,7 @@ const app = require('./app');
 const env = require('./config/env');
 const connectDB = require('./config/db');
 const vectorDB = require('./services/VectorDBService');
+const logger = require('./utils/logger');
 
 const startServer = async () => {
   // Connect to MongoDB
@@ -12,7 +13,7 @@ const startServer = async () => {
 
   // Start Express server
   app.listen(env.PORT, () => {
-    console.log(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
+    logger.info(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
   });
 };
 

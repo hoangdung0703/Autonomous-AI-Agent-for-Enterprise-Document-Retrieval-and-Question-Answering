@@ -1,3 +1,5 @@
+const logger = require('../utils/logger');
+
 const requestLogger = (req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -7,7 +9,7 @@ const requestLogger = (req, res, next) => {
       : res.statusCode >= 200 ? '\x1b[32m'                  // green
       : '\x1b[36m';                                         // cyan
     const reset = '\x1b[0m';
-    console.log(
+    logger.debug(
       `${statusColor}[${res.statusCode}]${reset} ${req.method} ${req.originalUrl} — ${duration}ms`
     );
   });
