@@ -44,11 +44,21 @@ class ConversationService {
     return conversation;
   }
 
-  async listConversations(userId, organizationId) {
-    return Conversation.find({ userId, organizationId })
-      .populate('documentIds', '_id originalName status')
-      .sort({ updatedAt: -1 })
-      .select('-messages'); // Exclude message bodies for list performance
+  async listConversations(userId, organizationId, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+    const [conversations, total] = await Promise.all([
+      Conversation.find({ userId, organizationId })
+        .populate('documentIds', '_id originalName status')
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select('-messages'),
+      Conversation.countDocuments({ userId, organizationId })
+    ]);
+    return {
+      conversations,
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+    };
   }
 
   async getConversation(conversationId, userId) {

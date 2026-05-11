@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const requestLogger = require('./middleware/requestLogger');
+const { globalLimiter } = require('./middleware/rateLimiter');
 const authRoutes = require('./routes/authRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
@@ -13,6 +14,9 @@ const app = express();
 
 // Request logger — must be first
 app.use(requestLogger);
+
+// Global rate limiter — applied before all routes
+app.use(globalLimiter);
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173' }));

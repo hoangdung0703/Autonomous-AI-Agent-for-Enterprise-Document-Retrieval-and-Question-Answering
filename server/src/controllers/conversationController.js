@@ -20,8 +20,10 @@ class ConversationController {
 
   async list(req, res, next) {
     try {
-      const conversations = await conversationService.listConversations(req.user.id, req.organizationId);
-      res.status(200).json(conversations);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const result = await conversationService.listConversations(req.user.id, req.organizationId, page, limit);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

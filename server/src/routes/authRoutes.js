@@ -2,11 +2,14 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
+const validate = require('../middleware/validate');
+const { register, login } = require('../validators/authValidators');
+const { authLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', authLimiter, validate(register), authController.register);
+router.post('/login', authLimiter, validate(login), authController.login);
 router.get('/refresh-token', authMiddleware, authController.refreshToken.bind(authController));
 
 // Test routes for verification

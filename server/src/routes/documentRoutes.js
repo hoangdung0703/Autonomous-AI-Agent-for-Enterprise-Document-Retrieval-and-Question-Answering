@@ -4,6 +4,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 const orgMiddleware = require('../middleware/orgMiddleware');
 const uploadMiddleware = require('../middleware/uploadMiddleware');
+const validate = require('../middleware/validate');
+const { upload } = require('../validators/documentValidators');
 
 const router = express.Router();
 
@@ -11,7 +13,7 @@ const router = express.Router();
 router.get('/', authMiddleware, orgMiddleware, documentController.getAll);
 
 // POST /upload — admin + org member only
-router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMiddleware.single('file'), documentController.upload);
+router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMiddleware.single('file'), validate(upload), documentController.upload);
 
 // DELETE /:id — admin + org member only
 router.delete('/:id', authMiddleware, adminMiddleware, orgMiddleware, documentController.deleteDocument);

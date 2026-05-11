@@ -3,16 +3,18 @@ import api from '../services/api';
 
 export function useDocuments() {
   const [documents, setDocuments] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const intervalRef = useRef(null);
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const { data } = await api.get('/documents');
-      setDocuments(data);
+      const { data } = await api.get('/documents?page=1&limit=20');
+      setDocuments(data.documents);
+      setPagination(data.pagination);
       setError(null);
-      return data;
+      return data.documents;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load documents');
       return [];
@@ -72,5 +74,5 @@ export function useDocuments() {
     }
   };
 
-  return { documents, loading, error, uploadDocument, deleteDocument, fetchDocuments };
+  return { documents, pagination, loading, error, uploadDocument, deleteDocument, fetchDocuments };
 }

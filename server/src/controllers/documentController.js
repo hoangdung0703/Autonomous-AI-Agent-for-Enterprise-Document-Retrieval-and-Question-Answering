@@ -50,11 +50,28 @@ class DocumentController {
 
   async getAll(req, res, next) {
     try {
-      const documents = await Document.find({ organizationId: req.organizationId })
-        .populate('uploadedBy', 'name email role')
-        .sort({ createdAt: -1 });
-      
-      res.status(200).json(documents);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const skip = (page - 1) * limit;
+
+      const [documents, total] = await Promise.all([
+        Document.find({ organizationId: req.organizationId })
+          .populate('uploadedBy', 'name email')
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Document.countDocuments({ organizationId: req.organizationId })
+      ]);
+
+      res.status(200).json({
+        documents,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     } catch (error) {
       next(error);
     }

@@ -4,6 +4,7 @@ import api from '../services/api';
 
 export function useConversations() {
   const [conversations, setConversations] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -11,8 +12,9 @@ export function useConversations() {
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get('/conversations');
-      setConversations(data);
+      const { data } = await api.get('/conversations?page=1&limit=20');
+      setConversations(data.conversations);
+      setPagination(data.pagination);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load conversations');
     } finally {
@@ -46,6 +48,7 @@ export function useConversations() {
 
   return {
     conversations,
+    pagination,
     loading,
     error,
     createConversation,

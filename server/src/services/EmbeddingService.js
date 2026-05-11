@@ -69,52 +69,51 @@ class EmbeddingService {
       };
 
       // Generate embeddings in batches of 2 with 2000ms delay after every batch
-      let embeddingsList = [];
+      const successfulEmbeddings = [];
       const batchSize = 2;
 
-      try {
-        for (let i = 0; i < validChunks.length; i += batchSize) {
-          const batchChunks = validChunks.slice(i, i + batchSize);
-          const batchPromises = batchChunks.map(chunk => embedWithRetry(chunk));
+      for (let i = 0; i < validChunks.length; i += batchSize) {
+        const batch = validChunks.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(
+          batch.map(chunk => embedWithRetry(chunk))
+        );
 
-          const batchResults = await Promise.all(batchPromises);
-          embeddingsList.push(...batchResults);
+        batchResults.forEach((result, idx) => {
+          if (result.status === 'fulfilled') {
+            successfulEmbeddings.push({ chunk: batch[idx], embedding: result.value });
+          } else {
+            console.warn(`[EmbeddingService] Chunk ${i + idx} failed embedding: ${result.reason?.message}`);
+          }
+        });
 
-          // Rate-limit delay after every batch
-          await new Promise(r => setTimeout(r, 2000));
-        }
-
-        console.log(`[DEBUG] embedDocuments returned list of size: ${embeddingsList?.length}`);
-        if (embeddingsList && embeddingsList.length > 0) {
-          console.log('[DEBUG] Type:', typeof embeddingsList[0]);
-          console.log(`[DEBUG] Length of first embedding array: ${embeddingsList[0]?.length}`);
-        }
-      } catch (embedError) {
-        console.error(`[EmbeddingService] embedDocuments failed:`, embedError);
-        throw embedError;
+        // Rate-limit delay after every batch
+        await new Promise(r => setTimeout(r, 2000));
       }
 
-
-      if (!embeddingsList || !Array.isArray(embeddingsList) || embeddingsList.length === 0) {
-        throw new Error('Embedding validation failed: Returned embeddings list is empty or invalid.');
+      if (successfulEmbeddings.length > 0) {
+        console.log(`[DEBUG] Successfully embedded ${successfulEmbeddings.length} / ${validChunks.length} chunks.`);
+      }
+      const failedCount = validChunks.length - successfulEmbeddings.length;
+      if (failedCount > 0) {
+        console.warn(`[EmbeddingService] Skipped ${failedCount} chunks due to embedding failure.`);
       }
 
-      for (let i = 0; i < embeddingsList.length; i++) {
-        const emb = embeddingsList[i];
-        if (!emb || !Array.isArray(emb) || emb.length === 0 || typeof emb[0] !== 'number') {
-          throw new Error(`Embedding validation failed: Invalid embedding at index ${i}. Expected a non-empty array of numbers.`);
-        }
+      if (successfulEmbeddings.length === 0) {
+        throw new Error('Embedding failed: no chunks could be embedded successfully.');
       }
 
       const docRecord = await Document.findById(documentId);
       if (!docRecord) throw new Error('Document record not found');
 
-      // Prepare payload for ChromaDB
+      // Prepare payload for ChromaDB using only successful embeddings
       const ids = [];
+      const embeddingsList = [];
       const metadatas = [];
+      const chunkTexts = [];
 
-      for (let i = 0; i < validChunks.length; i++) {
+      successfulEmbeddings.forEach(({ chunk, embedding }, i) => {
         ids.push(`${documentId}_chunk_${i}`);
+        embeddingsList.push(embedding);
         metadatas.push({
           documentId: documentId.toString(),
           fileName: docRecord.fileName,
@@ -122,12 +121,13 @@ class EmbeddingService {
           uploadedBy: uploadedBy.toString(),
           uploadedAt: docRecord.createdAt.toISOString()
         });
-      }
+        chunkTexts.push(chunk);
+      });
 
-      await vectorDB.upsertChunks(ids, embeddingsList, metadatas, validChunks);
+      await vectorDB.upsertChunks(ids, embeddingsList, metadatas, chunkTexts);
 
       docRecord.status = 'ready';
-      docRecord.chunkCount = validChunks.length;
+      docRecord.chunkCount = successfulEmbeddings.length;
       await docRecord.save();
 
     } catch (error) {
