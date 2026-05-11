@@ -33,22 +33,53 @@ class EmbeddingService {
         throw new Error('Document resulted in 0 chunks.');
       }
 
-      // Generate embeddings in batches of 10
+      // Filter out chunks that are too short or mostly whitespace
+      const validChunks = chunks.filter(chunk => {
+        const cleaned = chunk.replace(/\s+/g, ' ').trim();
+        return cleaned.length >= 50;
+      });
+
+      console.log(`[EmbeddingService] Skipped ${chunks.length - validChunks.length} invalid chunks out of ${chunks.length} total.`);
+
+      if (validChunks.length === 0) {
+        throw new Error('All chunks were filtered out as invalid (too short or whitespace-only).');
+      }
+
+      // Embed with retry: up to 2 retries per chunk, 2000ms between retries
+      const embedWithRetry = async (chunk, maxRetries = 2) => {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            const vector = await embedText(chunk, env.GOOGLE_API_KEY);
+            return vector;
+          } catch (err) {
+            if (attempt < maxRetries) {
+              console.warn(`[EmbeddingService] Retry ${attempt + 1}/${maxRetries} for chunk after error: ${err.message}`);
+              await new Promise(r => setTimeout(r, 2000));
+            } else {
+              throw err;
+            }
+          }
+        }
+      };
+
+      // Generate embeddings in batches of 3 with 1000ms delay after every batch
       let embeddingsList = [];
-      const batchSize = 10;
-      
+      const batchSize = 3;
+
       try {
-        for (let i = 0; i < chunks.length; i += batchSize) {
-          const batchChunks = chunks.slice(i, i + batchSize);
-          const batchPromises = batchChunks.map(chunk => embedText(chunk, env.GOOGLE_API_KEY));
-          
+        for (let i = 0; i < validChunks.length; i += batchSize) {
+          const batchChunks = validChunks.slice(i, i + batchSize);
+          const batchPromises = batchChunks.map(chunk => embedWithRetry(chunk));
+
           const batchResults = await Promise.all(batchPromises);
           embeddingsList.push(...batchResults);
+
+          // Rate-limit delay after every batch
+          await new Promise(r => setTimeout(r, 1000));
         }
-        
+
         console.log(`[DEBUG] embedDocuments returned list of size: ${embeddingsList?.length}`);
         if (embeddingsList && embeddingsList.length > 0) {
-          console.log('[DEBUG] Raw first embedding:', JSON.stringify(embeddingsList[0]));
           console.log('[DEBUG] Type:', typeof embeddingsList[0]);
           console.log(`[DEBUG] Length of first embedding array: ${embeddingsList[0]?.length}`);
         }
@@ -56,6 +87,7 @@ class EmbeddingService {
         console.error(`[EmbeddingService] embedDocuments failed:`, embedError);
         throw embedError;
       }
+
 
       if (!embeddingsList || !Array.isArray(embeddingsList) || embeddingsList.length === 0) {
         throw new Error('Embedding validation failed: Returned embeddings list is empty or invalid.');
@@ -75,7 +107,7 @@ class EmbeddingService {
       const ids = [];
       const metadatas = [];
 
-      for (let i = 0; i < chunks.length; i++) {
+      for (let i = 0; i < validChunks.length; i++) {
         ids.push(`${documentId}_chunk_${i}`);
         metadatas.push({
           documentId: documentId.toString(),
@@ -86,10 +118,10 @@ class EmbeddingService {
         });
       }
 
-      await vectorDB.upsertChunks(ids, embeddingsList, metadatas, chunks);
+      await vectorDB.upsertChunks(ids, embeddingsList, metadatas, validChunks);
 
       docRecord.status = 'ready';
-      docRecord.chunkCount = chunks.length;
+      docRecord.chunkCount = validChunks.length;
       await docRecord.save();
 
     } catch (error) {

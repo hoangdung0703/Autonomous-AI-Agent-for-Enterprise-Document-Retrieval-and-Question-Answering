@@ -48,6 +48,7 @@ class AuthService {
       id: user._id,
       email: user.email,
       role: user.role,
+      name: user.name,
     };
     return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
   }

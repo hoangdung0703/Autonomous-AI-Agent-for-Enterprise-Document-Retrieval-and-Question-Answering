@@ -12,10 +12,17 @@ class DocumentController {
       }
 
       const { originalname, filename, mimetype, size } = req.file;
+      // Decode Vietnamese/special characters — multer passes multipart headers as latin1
+      let decodedName;
+      try {
+        decodedName = decodeURIComponent(escape(originalname));
+      } catch {
+        decodedName = originalname;
+      }
 
       const docRecord = new Document({
         fileName: filename,
-        originalName: originalname,
+        originalName: decodedName,
         mimeType: mimetype,
         size,
         uploadedBy: req.user.id,
