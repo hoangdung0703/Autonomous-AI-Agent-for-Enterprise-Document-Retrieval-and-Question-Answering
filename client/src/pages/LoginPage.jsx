@@ -36,12 +36,12 @@ export default function LoginPage() {
           <div className="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
             <span className="text-white text-sm">D</span>
           </div>
-          DocMind
+          Archon
         </div>
 
         <div className="bg-background-elevated border border-border-subtle rounded-xl p-8 shadow-sm">
           <div className="text-center mb-6">
-            <h1 className="text-xl font-semibold text-text-primary mb-1">Welcome to DocMind</h1>
+            <h1 className="text-xl font-semibold text-text-primary mb-1">Welcome to Archon</h1>
             <p className="text-sm text-text-secondary">Sign in to continue</p>
           </div>
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
             <Input
               label="Email address"
               type="email"
-              placeholder="admin@docmind.local"
+              placeholder="admin@archon.local"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting}

@@ -51,7 +51,7 @@ export default function RegisterPage() {
           <div className="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
             <span className="text-white text-sm">D</span>
           </div>
-          DocMind
+          Archon
         </div>
 
         <div className="bg-background-elevated border border-border-subtle rounded-xl p-8 shadow-sm">

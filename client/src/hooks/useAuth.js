@@ -9,19 +9,19 @@ export function useAuth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('archon_token');
     if (token) {
       try {
         const decoded = jwtDecode(token);
         // Basic check if token is expired
         if (decoded.exp * 1000 < Date.now()) {
-          localStorage.removeItem('token');
+          localStorage.removeItem('archon_token');
           setUser(null);
         } else {
           setUser(decoded);
         }
       } catch (e) {
-        localStorage.removeItem('token');
+        localStorage.removeItem('archon_token');
       }
     }
     setLoading(false);
@@ -30,7 +30,7 @@ export function useAuth() {
   const login = async (email, password) => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('archon_token', data.token);
       const decoded = jwtDecode(data.token);
       setUser(decoded);
       // Redirect to onboarding if user hasn't joined an org yet
@@ -45,14 +45,14 @@ export function useAuth() {
   };
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('archon_token');
     setUser(null);
     navigate('/login');
   }, [navigate]);
 
   // Called after org create/join — store fresh token and update user state
   const updateToken = useCallback((newToken) => {
-    localStorage.setItem('token', newToken);
+    localStorage.setItem('archon_token', newToken);
     const decoded = jwtDecode(newToken);
     setUser(decoded);
   }, []);

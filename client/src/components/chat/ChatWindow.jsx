@@ -32,7 +32,7 @@ export default function ChatWindow({ messages, loading, conversationId }) {
         <div className="w-12 h-12 rounded-2xl bg-accent-subtle flex items-center justify-center mb-4 border border-accent/20">
           <span className="text-xl text-accent font-bold">D</span>
         </div>
-        <h2 className="text-xl font-semibold text-text-primary mb-2">Welcome to DocMind</h2>
+        <h2 className="text-xl font-semibold text-text-primary mb-2">Welcome to Archon</h2>
         <p className="text-sm text-text-secondary max-w-md">
           Ask questions about your uploaded enterprise documents. I will retrieve relevant context and provide accurate, grounded answers.
         </p>

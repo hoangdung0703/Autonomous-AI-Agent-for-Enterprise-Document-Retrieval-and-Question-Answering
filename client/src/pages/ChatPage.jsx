@@ -16,7 +16,7 @@ export default function ChatPage() {
         <div className="w-16 h-16 rounded-2xl bg-accent-subtle border border-accent/20 flex items-center justify-center mb-6">
           <MessageSquare size={28} className="text-accent" />
         </div>
-        <h2 className="text-lg font-semibold text-text-primary mb-2">DocMind</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Archon</h2>
         <p className="text-sm text-text-secondary max-w-sm">
           Select a conversation from the sidebar or create a new one to start querying your documents.
         </p>
@@ -50,7 +50,7 @@ export default function ChatPage() {
         )}
         <ChatInput onSend={sendMessage} disabled={isSending} />
         <div className="text-center mt-2">
-          <span className="text-[10px] text-text-muted">DocMind answers only from selected documents.</span>
+          <span className="text-[10px] text-text-muted">Archon answers only from selected documents.</span>
         </div>
       </div>
     </div>

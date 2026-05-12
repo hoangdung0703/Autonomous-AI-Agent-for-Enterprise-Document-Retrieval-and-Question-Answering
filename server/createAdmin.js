@@ -6,7 +6,7 @@ const authService = require('./src/services/AuthService');
   try {
     await mongoose.connect(process.env.MONGO_URI);
     
-    const email = 'admin@docmind.local';
+    const email = 'admin@archon.local';
     const password = 'AdminPassword123!';
     
     const User = require('./src/models/User');

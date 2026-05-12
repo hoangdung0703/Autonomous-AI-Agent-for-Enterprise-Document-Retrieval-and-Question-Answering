@@ -1,4 +1,4 @@
-DocMind — Frontend Design System & Component Specifications
+Archon — Frontend Design System & Component Specifications
 Read this alongside requirements.md before writing any frontend code.
 
 1. Design Philosophy
@@ -80,7 +80,7 @@ No top navbar — sidebar handles all navigation
 5. Component Specifications
 5.1 Sidebar
 
-Logo: simple text "DocMind" in text-text-primary font-semibold with a small indigo square icon prefix
+Logo: simple text "Archon" in text-text-primary font-semibold with a small indigo square icon prefix
 Nav items: text-sm text-text-secondary hover:text-text-primary hover:bg-background-hover with rounded-md px-3 py-2
 Active nav item: bg-accent-subtle text-accent border-l-2 border-accent
 Bottom section: user email truncated + logout button in text-text-muted hover:text-text-primary
@@ -89,7 +89,7 @@ Bottom section: user email truncated + logout button in text-text-muted hover:te
 
 Centered card on bg-background-primary, card width max-w-sm
 Card: bg-background-elevated border border-border-subtle rounded-xl p-8
-Title: "Welcome to DocMind" — text-xl font-semibold
+Title: "Welcome to Archon" — text-xl font-semibold
 Subtitle: "Sign in to continue" — text-sm text-text-secondary
 Input fields: bg-background-primary border border-border-subtle rounded-lg px-3 py-2 text-sm focus:border-border-default focus:outline-none
 Submit button: full width, bg-accent hover:bg-accent-hover text-white rounded-lg py-2 text-sm font-medium
@@ -107,7 +107,7 @@ Message bubbles:
 
 User message: right-aligned, bg-accent-subtle border border-accent/20 rounded-2xl rounded-tr-sm px-4 py-3 max-w-[70%] ml-auto
 Assistant message: left-aligned, no bubble background — just text with subtle left padding, max-w-[80%]
-Assistant avatar: small indigo circle with "D" (DocMind) — w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs text-white
+Assistant avatar: small indigo circle with "D" (Archon) — w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs text-white
 
 Source citations:
 

@@ -10,7 +10,7 @@ export default function AppShell() {
     <div className="flex flex-col md:flex-row h-screen bg-background-primary overflow-hidden">
       {/* Mobile header — only visible on small screens */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border-subtle bg-background-secondary shrink-0">
-        <span className="text-sm font-semibold text-text-primary">DocMind</span>
+        <span className="text-sm font-semibold text-text-primary">Archon</span>
         <button onClick={() => setIsSidebarOpen(true)}>
           <Menu size={20} className="text-text-secondary" />
         </button>

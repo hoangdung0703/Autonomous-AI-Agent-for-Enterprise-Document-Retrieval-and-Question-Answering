@@ -1,6 +1,6 @@
-# DocMind — Autonomous AI Agent for Enterprise Document Retrieval and Q&A
+# Archon — Autonomous AI Agent for Enterprise Document Retrieval and Q&A
 
-DocMind is an internal knowledge management system that lets enterprise teams upload documents (PDF, DOCX, XLSX) and query them through an AI chat interface powered by RAG (Retrieval-Augmented Generation). The agent retrieves relevant context from a ChromaDB vector store and uses Google Gemini to produce accurate, fact-grounded answers — minimising hallucination.
+Archon is an internal knowledge management system that lets enterprise teams upload documents (PDF, DOCX, XLSX) and query them through an AI chat interface powered by RAG (Retrieval-Augmented Generation). The agent retrieves relevant context from a ChromaDB vector store and uses Google Gemini to produce accurate, fact-grounded answers — minimising hallucination.
 
 ---
 
@@ -160,6 +160,6 @@ All protected routes require `Authorization: Bearer <token>` header.
 - **File storage is local only.** Uploaded files are saved to `server/uploads/`. This directory is not shared between machines or persisted across Docker restarts. For production, replace `StorageService.js` with an S3 adapter.
 - **No real-time streaming.** Chat responses are returned as a single HTTP response after the full LLM call completes. Streaming (SSE/WebSocket) is out of scope per spec.
 - **Embedding rate limits.** The Gemini embedding API (free tier) has strict RPM limits. Large documents are processed in batches of 3 chunks with 1-second delays to stay within limits — processing a 100-page PDF may take 2–3 minutes.
-- **ChromaDB default embedding warning.** You may see `Cannot instantiate a collection with the DefaultEmbeddingFunction` in the server logs. This is a ChromaDB SDK warning — it does not affect functionality because DocMind always provides pre-computed embeddings.
+- **ChromaDB default embedding warning.** You may see `Cannot instantiate a collection with the DefaultEmbeddingFunction` in the server logs. This is a ChromaDB SDK warning — it does not affect functionality because Archon always provides pre-computed embeddings.
 - **No OAuth or social login.** Authentication is email + password JWT only.
 - **Single-tenant.** There is no organisation or workspace isolation between users.

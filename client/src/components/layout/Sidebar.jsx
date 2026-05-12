@@ -103,7 +103,7 @@ export default function Sidebar({ isOpen, onClose }) {
               <div className="w-5 h-5 bg-accent rounded-sm flex items-center justify-center shrink-0">
                 <span className="text-white text-xs font-bold">D</span>
               </div>
-              DocMind
+              Archon
             </div>
             {organizationName && (
               <span className="text-[10px] text-text-muted pl-7 truncate">{organizationName}</span>
