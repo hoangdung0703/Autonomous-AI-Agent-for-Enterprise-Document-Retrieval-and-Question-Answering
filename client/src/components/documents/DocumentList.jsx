@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Trash2, FileText } from 'lucide-react';
+import { Trash2, FileText, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import StatusBadge from './StatusBadge';
 import SkeletonRow from '../ui/SkeletonRow';
 import Button from '../ui/Button';
 
-export default function DocumentList({ documents, loading, onDelete }) {
+export default function DocumentList({ documents, loading, onDelete, onReprocess }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const handleConfirmDelete = async (id) => {
@@ -75,13 +75,24 @@ export default function DocumentList({ documents, loading, onDelete }) {
                     {format(new Date(doc.createdAt), 'MMM d, yyyy HH:mm')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => setDeleteConfirm(doc._id)}
-                      className="p-2 text-text-muted hover:text-status-failed hover:bg-status-failed-bg rounded transition-colors"
-                      title="Delete document"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {doc.status === 'failed' && (
+                        <button
+                          onClick={() => onReprocess(doc._id)}
+                          className="p-2 text-text-muted hover:text-accent transition-colors rounded"
+                          title="Re-process document"
+                        >
+                          <RefreshCw size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setDeleteConfirm(doc._id)}
+                        className="p-2 text-text-muted hover:text-status-failed hover:bg-status-failed-bg rounded transition-colors"
+                        title="Delete document"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

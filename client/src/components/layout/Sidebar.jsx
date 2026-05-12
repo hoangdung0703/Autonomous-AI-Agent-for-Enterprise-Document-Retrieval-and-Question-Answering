@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Plus, MessageSquare, MoreHorizontal, Pencil, Trash2, Menu } from 'lucide-react';
+import { LayoutDashboard, LogOut, Plus, MessageSquare, MoreHorizontal, Pencil, Trash2, Menu, Search, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useConversations } from '../../hooks/useConversations';
 import { useJoinRequests } from '../../hooks/useJoinRequests';
@@ -18,6 +18,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const [menuOpenId, setMenuOpenId] = useState(null);
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const renameInputRef = useRef(null);
 
   // Focus rename input when activated
@@ -78,6 +79,10 @@ export default function Sidebar({ isOpen, onClose }) {
     if (e.key === 'Escape') setRenamingId(null);
   };
 
+  const filteredConversations = conversations.filter(conv =>
+    conv.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -132,70 +137,94 @@ export default function Sidebar({ isOpen, onClose }) {
           ) : conversations.length === 0 ? (
             <p className="text-xs text-text-muted px-2 py-3">No conversations yet</p>
           ) : (
-            <ul className="space-y-0.5">
-              {conversations.map((conv) => {
-                const isActive = conv._id === activeConversationId;
-                return (
-                  <li key={conv._id} className="relative group">
-                    {renamingId === conv._id ? (
-                      <input
-                        ref={renameInputRef}
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onBlur={() => commitRename(conv._id)}
-                        onKeyDown={(e) => handleRenameKeyDown(e, conv._id)}
-                        maxLength={100}
-                        className="w-full px-3 py-2 text-sm bg-background-elevated border border-accent rounded-md text-text-primary outline-none"
-                      />
-                    ) : (
-                      <button
-                        onClick={() => { navigate(`/conversations/${conv._id}`); onClose(); }}
-                        className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-sm transition-colors text-left ${
-                          isActive
-                            ? 'bg-accent-subtle text-accent border-l-2 border-accent pl-[10px]'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-background-hover'
-                        }`}
-                      >
-                        <span className="truncate flex-1">{conv.title}</span>
+            <>
+              {/* Search box */}
+              <div className="px-2 mb-2">
+                <div className="flex items-center gap-2 bg-background-elevated border border-border-subtle rounded-lg px-3 py-1.5">
+                  <Search size={12} className="text-text-muted flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Search conversations..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="bg-transparent text-xs text-text-primary placeholder:text-text-muted outline-none w-full"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')}>
+                      <X size={12} className="text-text-muted hover:text-text-primary" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {filteredConversations.length === 0 && searchQuery ? (
+                <p className="text-xs text-text-muted text-center py-4">No conversations found</p>
+              ) : (
+                <ul className="space-y-0.5">
+                  {filteredConversations.map((conv) => {
+                    const isActive = conv._id === activeConversationId;
+                    return (
+                      <li key={conv._id} className="relative group">
+                        {renamingId === conv._id ? (
+                          <input
+                            ref={renameInputRef}
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => commitRename(conv._id)}
+                            onKeyDown={(e) => handleRenameKeyDown(e, conv._id)}
+                            maxLength={100}
+                            className="w-full px-3 py-2 text-sm bg-background-elevated border border-accent rounded-md text-text-primary outline-none"
+                          />
+                        ) : (
+                          <button
+                            onClick={() => { navigate(`/conversations/${conv._id}`); onClose(); }}
+                            className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-sm transition-colors text-left ${
+                              isActive
+                                ? 'bg-accent-subtle text-accent border-l-2 border-accent pl-[10px]'
+                                : 'text-text-secondary hover:text-text-primary hover:bg-background-hover'
+                            }`}
+                          >
+                            <span className="truncate flex-1">{conv.title}</span>
 
-                        {/* ⋯ menu trigger */}
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuOpenId(menuOpenId === conv._id ? null : conv._id);
-                          }}
-                          className={`shrink-0 p-0.5 rounded hover:bg-background-hover ml-1 transition-opacity ${
-                            isActive || menuOpenId === conv._id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                          }`}
-                        >
-                          <MoreHorizontal size={14} />
-                        </span>
-                      </button>
-                    )}
+                            {/* ⋯ menu trigger */}
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpenId(menuOpenId === conv._id ? null : conv._id);
+                              }}
+                              className={`shrink-0 p-0.5 rounded hover:bg-background-hover ml-1 transition-opacity ${
+                                isActive || menuOpenId === conv._id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                              }`}
+                            >
+                              <MoreHorizontal size={14} />
+                            </span>
+                          </button>
+                        )}
 
-                    {/* Dropdown menu */}
-                    {menuOpenId === conv._id && (
-                      <div className="absolute right-2 top-full mt-0.5 z-40 bg-background-elevated border border-border-subtle rounded-lg shadow-lg overflow-hidden min-w-[130px]">
-                        <button
-                          onClick={(e) => startRename(e, conv)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-text-primary hover:bg-background-hover transition-colors"
-                        >
-                          <Pencil size={12} />
-                          Rename
-                        </button>
-                        <button
-                          onClick={(e) => handleDelete(e, conv._id)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-status-failed hover:bg-status-failed-bg transition-colors"
-                        >
-                          <Trash2 size={12} />
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+                        {/* Dropdown menu */}
+                        {menuOpenId === conv._id && (
+                          <div className="absolute right-2 top-full mt-0.5 z-40 bg-background-elevated border border-border-subtle rounded-lg shadow-lg overflow-hidden min-w-[130px]">
+                            <button
+                              onClick={(e) => startRename(e, conv)}
+                              className="flex items-center gap-2 w-full px-3 py-2 text-xs text-text-primary hover:bg-background-hover transition-colors"
+                            >
+                              <Pencil size={12} />
+                              Rename
+                            </button>
+                            <button
+                              onClick={(e) => handleDelete(e, conv._id)}
+                              className="flex items-center gap-2 w-full px-3 py-2 text-xs text-status-failed hover:bg-status-failed-bg transition-colors"
+                            >
+                              <Trash2 size={12} />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
           )}
         </div>
 

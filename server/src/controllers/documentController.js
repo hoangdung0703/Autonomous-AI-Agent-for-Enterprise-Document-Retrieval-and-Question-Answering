@@ -3,6 +3,7 @@ const storageService = require('../services/StorageService');
 const embeddingService = require('../services/EmbeddingService');
 const vectorDB = require('../services/VectorDBService');
 const { cache } = require('../utils/queryCache');
+const logger = require('../utils/logger');
 
 class DocumentController {
   async upload(req, res, next) {
@@ -106,11 +107,40 @@ class DocumentController {
 
       // Invalidate all cached RAG queries since the document set changed
       cache.flushAll();
-      console.log('[DocumentController] Cache flushed after document deletion.');
+      logger.debug('[DocumentController] Cache flushed after document deletion.');
 
       res.status(200).json({ message: 'Document deleted successfully' });
     } catch (error) {
       next(error);
+    }
+  }
+  async reprocess(req, res, next) {
+    try {
+      const doc = await Document.findOne({
+        _id: req.params.id,
+        organizationId: req.organizationId
+      });
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (doc.status === 'processing') {
+        return res.status(400).json({ error: 'Document is already being processed' });
+      }
+
+      // Reset status
+      doc.status = 'processing';
+      doc.chunkCount = 0;
+      await doc.save();
+
+      // Delete existing vectors for this document first
+      await vectorDB.deleteByDocumentId(doc._id.toString());
+
+      // Trigger re-embedding async
+      const absolutePath = storageService.getAbsolutePath(doc.fileName);
+      embeddingService.processDocument(doc._id, absolutePath, doc.mimeType, doc.uploadedBy)
+        .catch(err => logger.error(`[Reprocess] Failed for doc ${doc._id}: ${err.message}`));
+
+      res.status(202).json({ message: 'Document reprocessing started', documentId: doc._id });
+    } catch (err) {
+      next(err);
     }
   }
 }

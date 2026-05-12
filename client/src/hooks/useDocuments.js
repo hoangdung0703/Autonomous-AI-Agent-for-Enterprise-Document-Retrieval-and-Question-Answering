@@ -74,5 +74,22 @@ export function useDocuments() {
     }
   };
 
-  return { documents, pagination, loading, error, uploadDocument, deleteDocument, fetchDocuments };
+  const reprocessDocument = async (id) => {
+    // Optimistically flip status to processing so UI updates immediately
+    setDocuments((prev) =>
+      prev.map((doc) => doc._id === id ? { ...doc, status: 'processing', chunkCount: 0 } : doc)
+    );
+    try {
+      await api.post(`/documents/${id}/reprocess`);
+      // Polling in the useEffect will pick up subsequent status changes
+    } catch (err) {
+      // Restore failed status on error
+      setDocuments((prev) =>
+        prev.map((doc) => doc._id === id ? { ...doc, status: 'failed' } : doc)
+      );
+      throw err.response?.data?.error || 'Failed to reprocess document';
+    }
+  };
+
+  return { documents, pagination, loading, error, uploadDocument, deleteDocument, reprocessDocument, fetchDocuments };
 }

@@ -18,4 +18,7 @@ router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMid
 // DELETE /:id — admin + org member only
 router.delete('/:id', authMiddleware, adminMiddleware, orgMiddleware, documentController.deleteDocument);
 
+// POST /:id/reprocess — admin + org member only
+router.post('/:id/reprocess', authMiddleware, adminMiddleware, orgMiddleware, documentController.reprocess);
+
 module.exports = router;

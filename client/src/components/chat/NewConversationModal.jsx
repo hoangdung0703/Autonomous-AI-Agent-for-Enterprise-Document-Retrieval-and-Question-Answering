@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Loader2 } from 'lucide-react';
+import { X, FileText, Loader2, Info } from 'lucide-react';
 import api from '../../services/api';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -11,12 +11,15 @@ export default function NewConversationModal({ onClose, onCreate }) {
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [hoveredDoc, setHoveredDoc] = useState(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
       try {
         const { data } = await api.get('/documents');
-        setDocuments(data.filter((d) => d.status === 'ready'));
+        // Support both paginated { documents } and flat array responses
+        const docs = Array.isArray(data) ? data : data.documents;
+        setDocuments(docs.filter((d) => d.status === 'ready'));
       } catch {
         setError('Failed to load documents');
       } finally {
@@ -30,6 +33,13 @@ export default function NewConversationModal({ onClose, onCreate }) {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleSubmit = async () => {
@@ -64,7 +74,9 @@ export default function NewConversationModal({ onClose, onCreate }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleBackdrop}
     >
-      <div className="w-full max-w-md bg-background-secondary border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4">
+      <div
+        className="w-full max-w-md bg-background-secondary border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4 relative overflow-visible"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
           <h2 className="text-base font-semibold text-text-primary">New Conversation</h2>
@@ -103,20 +115,27 @@ export default function NewConversationModal({ onClose, onCreate }) {
             ) : (
               <div className="max-h-52 overflow-y-auto space-y-1 rounded-lg border border-border-subtle bg-background-elevated p-1">
                 {documents.map((doc) => (
-                  <label
+                  <div
                     key={doc._id}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer hover:bg-background-hover transition-colors"
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-hover cursor-pointer"
+                    onMouseEnter={() => setHoveredDoc(doc)}
+                    onMouseLeave={() => setHoveredDoc(null)}
+                    onClick={() => !isSubmitting && toggleDoc(doc._id)}
                   >
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(doc._id)}
                       onChange={() => toggleDoc(doc._id)}
                       disabled={isSubmitting}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-4 h-4 accent-accent rounded flex-shrink-0"
+                      onClick={(e) => e.stopPropagation()}
                     />
-                    <FileText size={14} className="text-text-muted shrink-0" />
-                    <span className="text-sm text-text-primary truncate">{doc.originalName}</span>
-                  </label>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text-primary truncate">{doc.originalName}</p>
+                      <p className="text-xs text-text-muted">{formatFileSize(doc.size)} · {doc.chunkCount ?? 0} chunks</p>
+                    </div>
+                    <Info size={14} className="text-text-muted flex-shrink-0" />
+                  </div>
                 ))}
               </div>
             )}
@@ -143,6 +162,35 @@ export default function NewConversationModal({ onClose, onCreate }) {
             Create Conversation
           </Button>
         </div>
+
+        {/* Document info popover */}
+        {hoveredDoc && (
+          <div className="absolute left-full ml-3 top-0 w-64 bg-background-elevated border border-border-subtle rounded-xl p-4 shadow-lg z-10">
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-3">Document Info</p>
+            <div className="space-y-2">
+              <div>
+                <p className="text-[10px] text-text-muted">File name</p>
+                <p className="text-xs text-text-primary font-mono break-all">{hoveredDoc.originalName}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-muted">Size</p>
+                <p className="text-xs text-text-primary">{formatFileSize(hoveredDoc.size)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-muted">Chunks embedded</p>
+                <p className="text-xs text-text-primary">{hoveredDoc.chunkCount ?? 0} chunks</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-muted">Uploaded</p>
+                <p className="text-xs text-text-primary">{new Date(hoveredDoc.createdAt).toLocaleDateString('vi-VN')}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-muted">Uploaded by</p>
+                <p className="text-xs text-text-primary">{hoveredDoc.uploadedBy?.name || 'Admin'}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

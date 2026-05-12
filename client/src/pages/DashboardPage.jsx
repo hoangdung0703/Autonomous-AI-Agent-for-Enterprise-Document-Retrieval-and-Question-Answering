@@ -6,7 +6,7 @@ import RequestsTab from '../components/dashboard/RequestsTab';
 import InviteCodesTab from '../components/dashboard/InviteCodesTab';
 
 export default function DashboardPage() {
-  const { documents, loading, error, uploadDocument, deleteDocument } = useDocuments();
+  const { documents, loading, error, uploadDocument, deleteDocument, reprocessDocument } = useDocuments();
   const [activeTab, setActiveTab] = useState('documents');
 
   return (
@@ -65,7 +65,8 @@ export default function DashboardPage() {
               <DocumentList 
                 documents={documents} 
                 loading={loading} 
-                onDelete={deleteDocument} 
+                onDelete={deleteDocument}
+                onReprocess={reprocessDocument}
               />
             </div>
           </div>
