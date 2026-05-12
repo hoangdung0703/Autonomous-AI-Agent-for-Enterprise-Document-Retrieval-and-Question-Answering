@@ -23,6 +23,18 @@ class OrganizationController {
       next(error);
     }
   }
+
+  async getMembers(req, res, next) {
+    try {
+      const members = await User.find(
+        { organizationId: req.user.organizationId },
+        'name email role createdAt'
+      ).sort({ createdAt: 1 });
+      res.status(200).json({ members });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new OrganizationController();
