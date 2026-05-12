@@ -63,7 +63,8 @@ ${question}
     // 6. Build sources without exposing raw content
     const sources = retrievedChunks.map(chunk => ({
       fileName: chunk.metadata.fileName,
-      chunkIndex: chunk.metadata.chunkIndex
+      chunkIndex: chunk.metadata.chunkIndex,
+      excerpt: chunk.chunkContent?.slice(0, 400) || ''
     }));
 
     // Deduplicate sources for cleaner output (optional but good practice)

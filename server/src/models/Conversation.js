@@ -14,7 +14,8 @@ const messageSchema = new mongoose.Schema({
   sources: [
     {
       fileName: { type: String },
-      chunkIndex: { type: Number }
+      chunkIndex: { type: Number },
+      excerpt: { type: String, default: '' }
     }
   ],
   createdAt: {

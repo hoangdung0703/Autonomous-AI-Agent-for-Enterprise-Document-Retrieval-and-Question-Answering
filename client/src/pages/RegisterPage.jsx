@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('archon_token', data.token);
       navigate('/onboarding');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');

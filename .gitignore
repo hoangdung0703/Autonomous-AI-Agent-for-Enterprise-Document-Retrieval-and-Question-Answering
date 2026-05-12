@@ -32,3 +32,6 @@ test_script.js
 SKILL.md
 *-requirements.md
 requirements.md
+server/test-*.js
+server/migrate*.js
+server/drop-*.js
