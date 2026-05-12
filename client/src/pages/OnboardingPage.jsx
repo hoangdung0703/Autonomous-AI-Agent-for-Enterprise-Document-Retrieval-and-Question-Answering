@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Copy, Check } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 export default function OnboardingPage() {
   const { user, updateToken } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('create'); // 'create' | 'join'
 
@@ -91,6 +93,7 @@ export default function OnboardingPage() {
       const { data } = await api.post('/organizations', { name: orgName.trim() });
       updateToken(data.token);
       setCreatedOrg({ name: data.organization.name, code: data.organization.code });
+      addToast('Organization created!', 'success');
     } catch (err) {
       setCreateError(err.response?.data?.message || 'Failed to create organization');
       setIsCreating(false);
@@ -107,6 +110,7 @@ export default function OnboardingPage() {
     try {
       const { data } = await api.post('/join-requests', { inviteCode: inviteCode.trim() });
       setWaitingRequest({ orgName: data.organization.name });
+      addToast('Request sent — waiting for admin approval', 'info');
     } catch (err) {
       setJoinError(err.response?.data?.message || 'Invalid organization code');
       setIsJoining(false);

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check, X, Trash2, PowerOff } from 'lucide-react';
+import { Copy, Check, X, Trash2, PowerOff, KeyRound } from 'lucide-react';
 import { useInviteCodes } from '../../hooks/useInviteCodes';
+import { useToast } from '../../context/ToastContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function InviteCodesTab() {
   const { codes, loading, error, fetchCodes, generateCode, deactivateCode, deleteCode } = useInviteCodes();
+  const { addToast } = useToast();
   const [expiryHours, setExpiryHours] = useState(24);
   const [maxUsage, setMaxUsage] = useState(10);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -23,6 +25,7 @@ export default function InviteCodesTab() {
     setIsGenerating(true);
     try {
       await generateCode(expiryHours, maxUsage);
+      addToast('Invite code generated', 'success');
     } catch (err) {
       setGenerateError(err);
     } finally {
@@ -35,7 +38,7 @@ export default function InviteCodesTab() {
     try {
       await deactivateCode(id);
     } catch (err) {
-      console.error(err);
+      addToast(typeof err === 'string' ? err : 'Failed to deactivate code', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -47,7 +50,7 @@ export default function InviteCodesTab() {
     try {
       await deleteCode(id);
     } catch (err) {
-      console.error(err);
+      addToast(typeof err === 'string' ? err : 'Failed to delete code', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -57,6 +60,7 @@ export default function InviteCodesTab() {
     await navigator.clipboard.writeText(codeStr);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+    addToast('Invite code copied!', 'success');
   };
 
   const expiryOptions = [
@@ -133,8 +137,10 @@ export default function InviteCodesTab() {
         )}
 
         {codes.length === 0 ? (
-          <div className="p-8 text-center text-text-secondary">
-            No invite codes generated yet
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <KeyRound size={36} className="text-text-muted mb-3 opacity-40" />
+            <p className="text-sm text-text-secondary font-medium">No invite codes yet</p>
+            <p className="text-xs text-text-muted mt-1">Generate a code above to invite teammates</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

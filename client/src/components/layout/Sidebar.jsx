@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Plus, MessageSquare, MoreHorizontal, Pencil, Trash2, Menu, Search, X } from 'lucide-react';
+import { LayoutDashboard, LogOut, Plus, MessageSquare, MoreHorizontal, Pencil, Trash2, Search, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useConversations } from '../../hooks/useConversations';
 import { useJoinRequests } from '../../hooks/useJoinRequests';
 import NewConversationModal from '../chat/NewConversationModal';
+import SkeletonRow from '../ui/SkeletonRow';
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
@@ -85,16 +86,15 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+      <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 md:w-60 bg-background-secondary border-r border-border-subtle transform transition-transform duration-200 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col h-full`}>
 
-      {/* Sidebar panel */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-60 bg-background-secondary border-r border-border-subtle flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="md:hidden absolute top-4 right-4 text-text-muted hover:text-text-primary"
+        >
+          <X size={18} />
+        </button>
 
         {/* Logo + Org name */}
         <div className="h-14 flex items-center px-4 shrink-0 border-b border-border-subtle">
@@ -129,13 +129,19 @@ export default function Sidebar({ isOpen, onClose }) {
           </p>
 
           {loading ? (
-            <div className="space-y-1 px-1 pt-1">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="h-8 bg-background-elevated rounded-md animate-pulse" />
+            <div className="px-2 space-y-1">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2">
+                  <SkeletonRow width="w-full" height="h-4" />
+                </div>
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <p className="text-xs text-text-muted px-2 py-3">No conversations yet</p>
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+              <MessageSquare size={32} className="text-text-muted mb-3 opacity-50" />
+              <p className="text-sm text-text-secondary font-medium">No conversations yet</p>
+              <p className="text-xs text-text-muted mt-1">Click "New Conversation" to get started</p>
+            </div>
           ) : (
             <>
               {/* Search box */}
@@ -157,7 +163,10 @@ export default function Sidebar({ isOpen, onClose }) {
                 </div>
               </div>
               {filteredConversations.length === 0 && searchQuery ? (
-                <p className="text-xs text-text-muted text-center py-4">No conversations found</p>
+                <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+                  <Search size={24} className="text-text-muted mb-2 opacity-50" />
+                  <p className="text-xs text-text-muted">No conversations match "{searchQuery}"</p>
+                </div>
               ) : (
                 <ul className="space-y-0.5">
                   {filteredConversations.map((conv) => {
@@ -274,7 +283,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </button>
           </div>
         </div>
-      </div>
+      </aside>
 
       {showModal && (
         <NewConversationModal

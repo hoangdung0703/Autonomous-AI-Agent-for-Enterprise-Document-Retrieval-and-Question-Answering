@@ -6,7 +6,7 @@ export default function MessageBubble({ message }) {
 
   if (isUser) {
     return (
-      <div className="ml-auto max-w-[70%] bg-accent-subtle border border-accent/20 rounded-2xl rounded-tr-sm px-4 py-3 animate-fade-in text-sm text-text-primary whitespace-pre-wrap">
+      <div className="ml-auto max-w-[85%] sm:max-w-[70%] bg-accent-subtle border border-accent/20 rounded-2xl rounded-tr-sm px-4 py-3 animate-fade-in text-sm text-text-primary whitespace-pre-wrap">
         {message.content}
       </div>
     );

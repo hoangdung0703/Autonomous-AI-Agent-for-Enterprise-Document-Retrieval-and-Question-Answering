@@ -16,10 +16,18 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
     return (
       <div className="bg-background-secondary rounded-xl border border-border-subtle p-6 h-full flex flex-col">
         <h3 className="text-lg font-semibold text-text-primary mb-6">Uploaded Documents</h3>
-        <div className="flex-1">
-          <SkeletonRow />
-          <SkeletonRow />
-          <SkeletonRow />
+        <div className="space-y-3 p-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-3 bg-background-elevated rounded-lg">
+              <SkeletonRow width="w-8" height="h-8" />
+              <div className="flex-1 space-y-2">
+                <SkeletonRow width="w-3/4" height="h-3" />
+                <SkeletonRow width="w-1/2" height="h-3" />
+              </div>
+              <SkeletonRow width="w-16" height="h-6" />
+              <SkeletonRow width="w-8" height="h-8" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -36,9 +44,10 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
 
       <div className="flex-1 overflow-auto">
         {documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center text-text-muted">
-            <FileText size={48} strokeWidth={1} className="mb-4 opacity-50" />
-            <p>No documents uploaded yet.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <FileText size={40} className="text-text-muted mb-4 opacity-40" />
+            <p className="text-sm text-text-secondary font-medium">No documents uploaded yet</p>
+            <p className="text-xs text-text-muted mt-1">Upload a PDF, DOCX, or XLSX to get started</p>
           </div>
         ) : (
           <table className="w-full text-left border-collapse min-w-[600px]">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 export function useDocuments() {
   const [documents, setDocuments] = useState([]);
@@ -7,6 +8,7 @@ export function useDocuments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const intervalRef = useRef(null);
+  const { addToast } = useToast();
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -55,9 +57,12 @@ export function useDocuments() {
       if (!intervalRef.current) {
         intervalRef.current = setInterval(fetchDocuments, 3000);
       }
+      addToast('Document uploaded successfully', 'success');
       return data;
     } catch (err) {
-      throw err.response?.data?.message || err.response?.data?.error?.message || 'Upload failed';
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Upload failed';
+      addToast(msg, 'error');
+      throw msg;
     }
   };
 
@@ -67,10 +72,13 @@ export function useDocuments() {
     setDocuments((prev) => prev.filter((doc) => doc._id !== id));
     try {
       await api.delete(`/documents/${id}`);
+      addToast('Document deleted', 'success');
     } catch (err) {
       // Restore on failure
       setDocuments(prevDocs);
-      throw err.response?.data?.message || 'Failed to delete document';
+      const msg = err.response?.data?.message || 'Failed to delete document';
+      addToast(msg, 'error');
+      throw msg;
     }
   };
 
@@ -81,13 +89,16 @@ export function useDocuments() {
     );
     try {
       await api.post(`/documents/${id}/reprocess`);
+      addToast('Reprocessing started', 'info');
       // Polling in the useEffect will pick up subsequent status changes
     } catch (err) {
       // Restore failed status on error
       setDocuments((prev) =>
         prev.map((doc) => doc._id === id ? { ...doc, status: 'failed' } : doc)
       );
-      throw err.response?.data?.error || 'Failed to reprocess document';
+      const msg = err.response?.data?.error || 'Failed to reprocess document';
+      addToast(msg, 'error');
+      throw msg;
     }
   };
 

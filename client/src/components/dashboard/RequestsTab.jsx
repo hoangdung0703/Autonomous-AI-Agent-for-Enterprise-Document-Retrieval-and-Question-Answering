@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, CheckCircle2 } from 'lucide-react';
 import { useJoinRequests } from '../../hooks/useJoinRequests';
+import { useToast } from '../../context/ToastContext';
 import Button from '../ui/Button';
 
 export default function RequestsTab() {
   const { pendingRequests, loading, fetchPendingRequests, approveRequest, rejectRequest } = useJoinRequests();
   const [processingId, setProcessingId] = useState(null);
-  const [error, setError] = useState('');
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetchPendingRequests();
@@ -14,11 +15,11 @@ export default function RequestsTab() {
 
   const handleApprove = async (id) => {
     setProcessingId(id);
-    setError('');
     try {
       await approveRequest(id);
+      addToast('Member approved', 'success');
     } catch (err) {
-      setError(err);
+      addToast(typeof err === 'string' ? err : 'Failed to approve request', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -26,11 +27,11 @@ export default function RequestsTab() {
 
   const handleReject = async (id) => {
     setProcessingId(id);
-    setError('');
     try {
       await rejectRequest(id);
+      addToast('Request rejected', 'info');
     } catch (err) {
-      setError(err);
+      addToast(typeof err === 'string' ? err : 'Failed to reject request', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -46,15 +47,12 @@ export default function RequestsTab() {
 
   return (
     <div className="bg-background-elevated border border-border-subtle rounded-xl overflow-hidden shadow-sm">
-      {error && (
-        <div className="m-4 p-3 bg-status-failed-bg border border-status-failed/20 text-status-failed rounded-lg text-sm">
-          {error}
-        </div>
-      )}
 
       {pendingRequests.length === 0 ? (
-        <div className="p-8 text-center text-text-secondary">
-          No pending requests
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <CheckCircle2 size={40} className="text-status-ready mb-4 opacity-60" />
+          <p className="text-sm text-text-secondary font-medium">All caught up!</p>
+          <p className="text-xs text-text-muted mt-1">No pending member requests</p>
         </div>
       ) : (
         <div className="overflow-x-auto">

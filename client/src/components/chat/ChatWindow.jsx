@@ -1,13 +1,30 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 
-export default function ChatWindow({ messages, loading }) {
+export default function ChatWindow({ messages, loading, conversationId }) {
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    if (!userScrolledUp) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading, userScrolledUp]);
+
+  useEffect(() => {
+    setUserScrolledUp(false);
+    bottomRef.current?.scrollIntoView({ behavior: 'instant' });
+  }, [conversationId]);
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setUserScrolledUp(!isNearBottom);
+  };
 
   if (messages.length === 0) {
     return (
@@ -24,14 +41,31 @@ export default function ChatWindow({ messages, loading }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-6">
-      <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        {messages.map((msg, index) => (
-          <MessageBubble key={msg._id || index} message={msg} />
-        ))}
-        {loading && <TypingIndicator />}
-        <div ref={bottomRef} className="h-px w-full" />
+    <>
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 lg:px-8 py-6"
+      >
+        <div className="max-w-4xl mx-auto flex flex-col gap-6">
+          {messages.map((msg, index) => (
+            <MessageBubble key={msg._id || index} message={msg} />
+          ))}
+          {loading && <TypingIndicator />}
+          <div ref={bottomRef} className="h-px w-full" />
+        </div>
       </div>
-    </div>
+      {userScrolledUp && (
+        <button
+          onClick={() => {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+            setUserScrolledUp(false);
+          }}
+          className="absolute bottom-24 right-6 lg:right-12 z-50 bg-accent hover:bg-accent-hover text-white rounded-full p-2 shadow-lg transition-all"
+        >
+          <ChevronDown size={16} />
+        </button>
+      )}
+    </>
   );
 }

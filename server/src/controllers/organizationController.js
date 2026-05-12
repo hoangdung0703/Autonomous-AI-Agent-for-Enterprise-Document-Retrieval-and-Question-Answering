@@ -1,4 +1,5 @@
 const organizationService = require('../services/OrganizationService');
+const User = require('../models/User');
 
 class OrganizationController {
 
@@ -16,7 +17,8 @@ class OrganizationController {
   async getMe(req, res, next) {
     try {
       const organization = await organizationService.getOrganization(req.user.id);
-      res.status(200).json({ organization });
+      const memberCount = await User.countDocuments({ organizationId: req.user.organizationId });
+      res.status(200).json({ organization, memberCount });
     } catch (error) {
       next(error);
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 export function useConversations() {
   const [conversations, setConversations] = useState([]);
@@ -8,6 +9,7 @@ export function useConversations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -27,24 +29,33 @@ export function useConversations() {
   }, [fetchConversations]);
 
   const createConversation = useCallback(async (title, documentIds) => {
-    const { data } = await api.post('/conversations', { title, documentIds });
-    setConversations((prev) => [data, ...prev]);
-    navigate(`/conversations/${data._id}`);
-    return data;
-  }, [navigate]);
+    try {
+      const { data } = await api.post('/conversations', { title, documentIds });
+      setConversations((prev) => [data, ...prev]);
+      addToast('Conversation created', 'success');
+      navigate(`/conversations/${data._id}`);
+      return data;
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to create conversation';
+      addToast(msg, 'error');
+      throw err;
+    }
+  }, [navigate, addToast]);
 
   const deleteConversation = useCallback(async (id) => {
     await api.delete(`/conversations/${id}`);
     setConversations((prev) => prev.filter((c) => c._id !== id));
-  }, []);
+    addToast('Conversation deleted', 'success');
+  }, [addToast]);
 
   const renameConversation = useCallback(async (id, newTitle) => {
     const { data } = await api.patch(`/conversations/${id}/title`, { title: newTitle });
     setConversations((prev) =>
       prev.map((c) => (c._id === id ? { ...c, title: data.title } : c))
     );
+    addToast('Conversation renamed', 'success');
     return data;
-  }, []);
+  }, [addToast]);
 
   return {
     conversations,

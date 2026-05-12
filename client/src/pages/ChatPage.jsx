@@ -12,14 +12,13 @@ export default function ChatPage() {
   // Empty state — no conversation selected
   if (!conversationId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 bg-background-primary">
-        <div className="w-14 h-14 rounded-2xl bg-accent-subtle border border-accent/20 flex items-center justify-center mb-5">
-          <MessageSquare size={24} className="text-accent" />
+      <div className="flex flex-col items-center justify-center h-full text-center px-8">
+        <div className="w-16 h-16 rounded-2xl bg-accent-subtle border border-accent/20 flex items-center justify-center mb-6">
+          <MessageSquare size={28} className="text-accent" />
         </div>
-        <h2 className="text-lg font-semibold text-text-primary mb-2">No conversation selected</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">DocMind</h2>
         <p className="text-sm text-text-secondary max-w-sm">
-          Select a conversation from the sidebar, or click{' '}
-          <span className="text-accent font-medium">+ New Conversation</span> to start asking questions about your documents.
+          Select a conversation from the sidebar or create a new one to start querying your documents.
         </p>
       </div>
     );
@@ -35,12 +34,12 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background-primary overflow-hidden">
+    <div className="flex flex-col h-full bg-background-primary overflow-hidden relative">
       {/* Conversation title + document chips */}
       <ConversationHeader conversation={conversation} />
 
       {/* Messages */}
-      <ChatWindow messages={conversation?.messages || []} loading={isSending} />
+      <ChatWindow messages={conversation?.messages || []} loading={isSending} conversationId={conversationId} />
 
       {/* Input area */}
       <div className="shrink-0 p-4 bg-gradient-to-t from-background-primary via-background-primary to-transparent z-10">

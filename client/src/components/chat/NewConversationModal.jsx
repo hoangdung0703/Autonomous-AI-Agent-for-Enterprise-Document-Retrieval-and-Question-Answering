@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Loader2, Info } from 'lucide-react';
+import { X, Loader2, Info } from 'lucide-react';
 import api from '../../services/api';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+
+const generateTitle = (selectedDocIds, documents) => {
+  const selectedDocs = documents.filter(d => selectedDocIds.includes(d._id));
+  if (selectedDocs.length === 0) return 'New Conversation';
+  if (selectedDocs.length === 1) {
+    // Remove file extension and truncate
+    const name = selectedDocs[0].originalName.replace(/\.[^/.]+$/, '');
+    return name.length > 50 ? name.slice(0, 50) + '...' : name;
+  }
+  if (selectedDocs.length === 2) {
+    const names = selectedDocs.map(d => d.originalName.replace(/\.[^/.]+$/, ''));
+    return `${names[0].slice(0, 25)} + ${names[1].slice(0, 25)}`;
+  }
+  // 3+ documents
+  const firstName = selectedDocs[0].originalName.replace(/\.[^/.]+$/, '').slice(0, 30);
+  return `${firstName} + ${selectedDocs.length - 1} more`;
+};
 
 export default function NewConversationModal({ onClose, onCreate }) {
   const [title, setTitle] = useState('');
@@ -56,7 +73,8 @@ export default function NewConversationModal({ onClose, onCreate }) {
 
     setIsSubmitting(true);
     try {
-      await onCreate(title.trim() || 'New Conversation', selectedIds);
+      const finalTitle = title.trim() || generateTitle(selectedIds, documents);
+      await onCreate(finalTitle, selectedIds);
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create conversation');
@@ -75,7 +93,7 @@ export default function NewConversationModal({ onClose, onCreate }) {
       onClick={handleBackdrop}
     >
       <div
-        className="w-full max-w-md bg-background-secondary border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4 relative overflow-visible"
+        className="w-full max-w-lg bg-background-secondary border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4 relative overflow-visible"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
@@ -92,7 +110,7 @@ export default function NewConversationModal({ onClose, onCreate }) {
         <div className="px-6 py-5 space-y-5">
           <Input
             label="Title (optional)"
-            placeholder="New Conversation"
+            placeholder="Leave blank to auto-generate from documents"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isSubmitting}
