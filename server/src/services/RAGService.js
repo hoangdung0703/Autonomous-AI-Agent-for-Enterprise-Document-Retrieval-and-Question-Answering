@@ -24,6 +24,25 @@ Rules:
 - Never use outside knowledge`;
   }
 
+  async expandQuery(question) {
+    try {
+      const expansionPrompt = `Given this question: "${question}"
+Generate 2 alternative phrasings that mean the same thing but use different words.
+Return ONLY a JSON array with 2 strings, no explanation.
+Example: ["alternative phrasing 1", "alternative phrasing 2"]`;
+
+      const response = await this.llm.invoke(expansionPrompt);
+      const text = response.content.trim();
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return [question, ...parsed.slice(0, 2)];
+      }
+    } catch (err) {
+      logger.warn(`[RAGService] Query expansion failed, using original: ${err.message}`);
+    }
+    return [question]; // fallback to original if expansion fails
+  }
+
   async query(question, documentIds = [], conversationHistory = []) {
     // 1. Check cache first
     const cacheKey = generateCacheKey(question, documentIds);
@@ -34,11 +53,29 @@ Rules:
     }
     logger.debug(`[RAGService] Cache miss — running RAG pipeline.`);
 
-    // 2. Embed the query
-    const queryEmbedding = await embedText(question, env.GOOGLE_API_KEY);
+    // Expand query into multiple phrasings
+    const expandedQueries = await this.expandQuery(question);
+    logger.debug(`[RAGService] Expanded query into ${expandedQueries.length} phrasings`);
 
-    // 3. Retrieve top chunks from ChromaDB, optionally filtered by documentIds
-    const retrievedChunks = await vectorDB.queryCollection(queryEmbedding, 8, documentIds);
+    // Embed and search for each phrasing
+    const allChunks = [];
+    for (const q of expandedQueries) {
+      const qEmbedding = await embedText(q, env.GOOGLE_API_KEY);
+      const chunks = await vectorDB.queryCollection(qEmbedding, 5, documentIds);
+      allChunks.push(...chunks);
+    }
+
+    // Deduplicate by content, keep unique chunks only
+    const seen = new Set();
+    const uniqueChunks = allChunks.filter(chunk => {
+      const key = chunk.chunkContent?.slice(0, 100);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Use top 8 unique chunks (was retrievedChunks before)
+    const retrievedChunks = uniqueChunks.slice(0, 8);
 
     // If no chunks are retrieved, fallback immediately or let LLM decide?
     // Let's pass it to LLM so it behaves exactly according to system prompt.
