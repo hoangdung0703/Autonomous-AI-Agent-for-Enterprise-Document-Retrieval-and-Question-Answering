@@ -24,7 +24,7 @@ Rules:
 - Never use outside knowledge`;
   }
 
-  async query(question, documentIds = []) {
+  async query(question, documentIds = [], conversationHistory = []) {
     // 1. Check cache first
     const cacheKey = generateCacheKey(question, documentIds);
     const cached = cache.get(cacheKey);
@@ -46,10 +46,15 @@ Rules:
       return `--- Chunk ${index + 1} ---\n${chunk.chunkContent}\n`;
     }).join('\n');
 
+    const historyText = conversationHistory
+      .slice(-4)
+      .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .join('\n');
+
     // 4. Build prompt
     const prompt = `
 ${this.systemPrompt}
-
+${historyText ? `\nRecent conversation:\n${historyText}\n` : ''}
 CONTEXT:
 ${contextString}
 

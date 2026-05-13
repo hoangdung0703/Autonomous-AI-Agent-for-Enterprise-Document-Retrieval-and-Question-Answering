@@ -118,8 +118,11 @@ class ConversationService {
       throw err;
     }
 
-    // Call RAG with document scope
-    const { answer, sources } = await ragService.query(question, conversation.documentIds);
+    // Get previous messages (user message is not yet pushed to the array)
+    const historyMessages = conversation.messages.slice(-6);
+
+    // Call RAG with document scope and history
+    const { answer, sources } = await ragService.query(question, conversation.documentIds, historyMessages);
 
     // Persist both messages
     conversation.messages.push({ role: 'user', content: question });
