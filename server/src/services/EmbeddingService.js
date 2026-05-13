@@ -23,28 +23,39 @@ class EmbeddingService {
 
   async processDocument(documentId, filePath, mimeType, uploadedBy) {
     try {
-      const text = await this.extractText(filePath, mimeType);
-      
-      if (!text || text.trim() === '') {
+      const cleanExtractedText = (rawText) => {
+        return rawText
+          .replace(/^\s*\d+\s*$/gm, '')      // Remove lines that are ONLY page numbers
+          .replace(/[ \t]{3,}/g, '  ')        // Collapse 3+ spaces/tabs to 2
+          .replace(/\n{4,}/g, '\n\n\n')       // Collapse 4+ newlines to 3
+          .replace(/[^\S\n]{2,}/g, ' ')       // Collapse inline whitespace
+          .trim();
+      };
+
+      const rawText = await this.extractText(filePath, mimeType);
+
+      if (!rawText || rawText.trim() === '') {
         throw new Error('No extractable text found in document.');
       }
 
+      const text = cleanExtractedText(rawText);
       const chunks = await this.splitter.splitText(text);
       if (chunks.length === 0) {
         throw new Error('Document resulted in 0 chunks.');
       }
 
-      // Filter out chunks that are too short, mostly whitespace, or lack meaningful text
-      const validChunks = chunks.filter(chunk => {
-        const textContent = typeof chunk === 'string' ? chunk : chunk.pageContent;
-        const cleaned = textContent.replace(/\s+/g, ' ').trim();
-        if (cleaned.length < 50) return false;
-        // Skip chunks where meaningful text ratio is too low
+      const isValidChunk = (text) => {
+        const cleaned = text.replace(/\s+/g, ' ').trim();
+        if (cleaned.length < 100) return false;
         const letters = (cleaned.match(/\p{L}/gu) || []).length;
-        const ratio = letters / cleaned.length;
-        if (ratio < 0.3) return false; // less than 30% actual letters = skip
+        if (letters / cleaned.length < 0.4) return false;
+        const words = cleaned.split(/\s+/).filter(w => w.length > 2);
+        if (words.length < 10) return false;
         return true;
-      });
+      };
+
+      // Filter out chunks that are too short, lack meaningful text, or have too few words
+      const validChunks = chunks.filter(chunk => isValidChunk(chunk));
 
       logger.debug(`[EmbeddingService] Skipped ${chunks.length - validChunks.length} invalid chunks out of ${chunks.length} total.`);
 
@@ -69,9 +80,10 @@ class EmbeddingService {
         }
       };
 
-      // Generate embeddings in batches of 2 with 2000ms delay after every batch
+      // Generate embeddings in batches of 2 with adaptive delay after every batch
       const successfulEmbeddings = [];
       const batchSize = 2;
+      let consecutiveFailures = 0;
 
       for (let i = 0; i < validChunks.length; i += batchSize) {
         const batch = validChunks.slice(i, i + batchSize);
@@ -87,8 +99,11 @@ class EmbeddingService {
           }
         });
 
-        // Rate-limit delay after every batch
-        await new Promise(r => setTimeout(r, 2000));
+        // Adaptive delay — slows down when failures spike
+        const batchFailCount = batchResults.filter(r => r.status === 'rejected').length;
+        consecutiveFailures = batchFailCount > 0 ? consecutiveFailures + batchFailCount : 0;
+        const delay = consecutiveFailures > 3 ? 2000 : 500;
+        await new Promise(r => setTimeout(r, delay));
       }
 
       if (successfulEmbeddings.length > 0) {

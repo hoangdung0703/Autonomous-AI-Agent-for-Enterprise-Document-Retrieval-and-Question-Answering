@@ -26,8 +26,8 @@ export default function UploadForm({ onUpload }) {
       return false;
     }
 
-    if (selectedFile.size > 10 * 1024 * 1024) { // 10MB
-      setError('File is too large. Maximum size is 10MB.');
+    if (selectedFile.size > 50 * 1024 * 1024) { // 10MB
+      setError('File is too large. Maximum size is 50MB.');
       return false;
     }
 
