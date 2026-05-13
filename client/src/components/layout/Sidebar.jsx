@@ -100,13 +100,11 @@ export default function Sidebar({ isOpen, onClose }) {
         <div className="h-14 flex items-center px-4 shrink-0 border-b border-border-subtle">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 text-text-primary font-semibold text-base">
-              <div className="w-5 h-5 bg-accent rounded-sm flex items-center justify-center shrink-0">
-                <span className="text-white text-xs font-bold">D</span>
-              </div>
+              <img src="/logo.png" alt="Archon" className="w-6 h-6" />
               Archon
             </div>
             {organizationName && (
-              <span className="text-[10px] text-text-muted pl-7 truncate">{organizationName}</span>
+              <span className="text-[10px] text-text-muted pl-8 truncate">{organizationName}</span>
             )}
           </div>
         </div>

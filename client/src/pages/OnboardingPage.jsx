@@ -124,36 +124,100 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background-primary px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center overflow-hidden px-4"
+      style={{ backgroundColor: '#0a0a0a', position: 'relative' }}>
+
+      {/* Top-left accent glow */}
+      <div style={{
+        position: 'absolute', top: '-20%', left: '-15%',
+        width: '600px', height: '600px',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 65%)',
+        pointerEvents: 'none',
+        zIndex: 0,
+        filter: 'blur(80px)'
+      }} />
+
+      {/* Bottom-right accent glow */}
+      <div style={{
+        position: 'absolute', bottom: '-10%', right: '-5%',
+        width: '500px', height: '500px',
+        background: 'radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0,
+        filter: 'blur(80px)'
+      }} />
+
+      {/* Center subtle mesh */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '800px', height: '800px',
+        background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 60%)',
+        pointerEvents: 'none', zIndex: 0
+      }} />
+
+      {/* Dot grid pattern */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+
+      {/* Starfield */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+        backgroundImage: `
+          radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px),
+          radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px)
+        `,
+        backgroundSize: '120px 120px, 80px 80px',
+        backgroundPosition: '0 0, 40px 40px'
+      }} />
+
+      <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
         {/* Logo */}
-        <div className="flex items-center gap-2 text-text-primary font-semibold text-xl mb-8 justify-center">
-          <div className="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
-            <span className="text-white text-sm">D</span>
-          </div>
-          Archon
+        <div className="flex flex-col items-center justify-center mb-8">
+          <img src="/logo.png" alt="Archon" className="w-10 h-10 mb-4" />
+          <h1 className="text-2xl font-semibold text-text-primary">Archon</h1>
         </div>
 
-        <div className="bg-background-elevated border border-border-subtle rounded-xl shadow-sm overflow-hidden">
+        <div 
+          className="rounded-xl overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(20,20,28,0.90)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            boxShadow: '0 0 0 1px rgba(99,102,241,0.08), 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+            position: 'relative', zIndex: 1
+          }}
+        >
+          <div style={{
+            height: '1px',
+            background: 'linear-gradient(to right, transparent, rgba(99,102,241,0.8) 30%, rgba(139,92,246,0.6) 70%, transparent)',
+            marginBottom: '28px',
+            borderRadius: '1px'
+          }} />
           {/* Tabs */}
           {!waitingRequest && (
             <div className="flex border-b border-border-subtle">
               <button
                 onClick={() => setActiveTab('create')}
-                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                className={`flex-1 py-3 text-sm transition-colors ${
                   activeTab === 'create'
-                    ? 'text-accent border-b-2 border-accent bg-background-primary'
-                    : 'text-text-secondary hover:text-text-primary'
+                    ? 'border-b-2 border-accent text-accent font-medium'
+                    : 'text-text-muted hover:text-text-secondary'
                 }`}
               >
                 Create Organization
               </button>
               <button
                 onClick={() => setActiveTab('join')}
-                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                className={`flex-1 py-3 text-sm transition-colors ${
                   activeTab === 'join'
-                    ? 'text-accent border-b-2 border-accent bg-background-primary'
-                    : 'text-text-secondary hover:text-text-primary'
+                    ? 'border-b-2 border-accent text-accent font-medium'
+                    : 'text-text-muted hover:text-text-secondary'
                 }`}
               >
                 Join Organization
@@ -167,7 +231,7 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 <div className="text-center mb-6">
                   <h1 className="text-lg font-semibold text-text-primary mb-1">Create your workspace</h1>
-                  <p className="text-sm text-text-secondary">You'll become the admin and get a shareable code</p>
+                  <p className="text-sm text-text-secondary">Start fresh — you'll become the admin and generate an invite code for your team</p>
                 </div>
                 <Input
                   label="Organization Name"
@@ -219,7 +283,7 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 <div className="text-center mb-6">
                   <h1 className="text-lg font-semibold text-text-primary mb-1">Join your team</h1>
-                  <p className="text-sm text-text-secondary">Enter the invite code shared by your organization admin</p>
+                  <p className="text-sm text-text-secondary">Enter an invite code shared by your organization's admin</p>
                 </div>
                 <Input
                   label="Invite Code"
