@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink, useNavigate, useParams } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
 import { LayoutDashboard, LogOut, Plus, MessageSquare, MoreHorizontal, Pencil, Trash2, Search, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useConversations } from '../../hooks/useConversations';
@@ -86,7 +86,14 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 md:w-60 bg-background-secondary border-r border-border-subtle transform transition-transform duration-200 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col h-full`}>
+      <aside 
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 md:w-60 transform transition-transform duration-200 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col h-full`}
+        style={{
+          backgroundColor: 'rgba(15,15,20,0.85)',
+          backdropFilter: 'blur(20px)',
+          borderRight: '1px solid rgba(255,255,255,0.06)'
+        }}
+      >
 
         {/* Close button — mobile only */}
         <button
@@ -98,13 +105,13 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Logo + Org name */}
         <div className="h-14 flex items-center px-4 shrink-0 border-b border-border-subtle">
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2 text-text-primary font-semibold text-base">
-              <img src="/logo.png" alt="Archon" className="w-6 h-6" />
-              Archon
-            </div>
+          <div className="flex flex-col min-w-0 -ml-3">
+            <Link to="/" className="flex items-center gap-2 px-3 py-2 hover:opacity-80 transition-opacity">
+              <img src="/logo.png" alt="Archon" className="w-7 h-7" />
+              <span className="text-sm font-semibold text-text-primary">Archon</span>
+            </Link>
             {organizationName && (
-              <span className="text-[10px] text-text-muted pl-8 truncate">{organizationName}</span>
+              <span className="text-[10px] text-text-muted pl-12 truncate -mt-1 pb-1">{organizationName}</span>
             )}
           </div>
         </div>

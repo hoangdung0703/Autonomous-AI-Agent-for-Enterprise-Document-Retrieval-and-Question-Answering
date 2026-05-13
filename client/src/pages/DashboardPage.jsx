@@ -13,13 +13,19 @@ import api from '../services/api';
 const StatCard = ({ icon, label, value, onClick, isActive }) => (
   <div
     onClick={onClick}
-    className={`bg-background-elevated border rounded-xl p-4 flex items-center gap-4 transition-colors ${
+    className={`rounded-xl p-4 flex items-center gap-4 transition-colors ${
       onClick ? 'cursor-pointer' : ''
     } ${
       isActive
         ? 'border-accent bg-accent-subtle'
-        : 'border-border-subtle hover:border-border-default'
+        : 'hover:border-border-default'
     }`}
+    style={{
+      backgroundColor: 'rgba(20,20,28,0.80)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)'
+    }}
   >
     <div className="w-10 h-10 rounded-lg bg-background-primary flex items-center justify-center flex-shrink-0">
       {icon}
@@ -50,7 +56,7 @@ export default function DashboardPage() {
   }, [activePanel]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-background-primary">
+    <div className="flex-1 overflow-y-auto p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <StatCard

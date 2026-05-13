@@ -6,17 +6,21 @@ export default function MessageBubble({ message }) {
 
   if (isUser) {
     return (
-      <div className="ml-auto max-w-[85%] sm:max-w-[70%] bg-accent-subtle border border-accent/20 rounded-2xl rounded-tr-sm px-4 py-3 animate-fade-in text-sm text-text-primary whitespace-pre-wrap">
+      <div
+        className="ml-auto max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tr-sm px-4 py-3 animate-fade-in text-sm text-white whitespace-pre-wrap"
+        style={{ backgroundColor: 'rgba(99,102,241,0.30)', border: '1px solid rgba(99,102,241,0.40)' }}
+      >
         {message.content}
       </div>
     );
   }
 
   return (
-    <div className="flex w-full max-w-[80%] animate-fade-in group">
-      <div className="w-6 h-6 rounded-full bg-accent shrink-0 flex items-center justify-center mr-3 mt-1">
-        <span className="text-[10px] text-white font-bold">D</span>
-      </div>
+    <div
+      className="flex w-full max-w-[80%] animate-fade-in group"
+      style={{ backgroundColor: 'rgba(20,20,28,0.60)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}
+    >
+      <img src="/logo.png" className="w-6 h-6 rounded-full shrink-0 mr-3 mt-1" />
       <div className="flex-1 min-w-0">
           <div className="chat-content text-sm text-text-primary leading-relaxed">
             <ReactMarkdown
