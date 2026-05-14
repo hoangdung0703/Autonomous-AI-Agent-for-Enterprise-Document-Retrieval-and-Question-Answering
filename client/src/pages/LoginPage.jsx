@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <img src="/logo.png" alt="Archon" className="w-10 h-10 mx-auto mb-4" />
           <h1 className="text-2xl font-semibold text-text-primary">Welcome to Archon</h1>
-          <p className="text-sm text-text-secondary mt-1">Sign in to continue</p>
+          <p className="text-sm text-text-secondary mt-1">Your AI-powered knowledge base. Ask anything, find everything.</p>
         </div>
 
         <div 

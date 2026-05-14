@@ -102,7 +102,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <img src="/logo.png" alt="Archon" className="w-10 h-10 mx-auto mb-4" />
           <h1 className="text-2xl font-semibold text-text-primary">Welcome to Archon</h1>
-          <p className="text-sm text-text-secondary mt-1">Sign up to get started</p>
+          <p className="text-sm text-text-secondary mt-1">Join Archon and unlock the power of your documents.</p>
         </div>
 
         <div 
