@@ -114,6 +114,28 @@ class DocumentController {
       next(error);
     }
   }
+  async rename(req, res, next) {
+    try {
+      const { originalName } = req.body;
+      if (!originalName || !originalName.trim()) {
+        return res.status(400).json({ error: 'Name cannot be empty' });
+      }
+
+      const doc = await Document.findOne({
+        _id: req.params.id,
+        organizationId: req.organizationId
+      });
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+      doc.originalName = originalName.trim();
+      await doc.save();
+
+      res.status(200).json({ document: doc });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async reprocess(req, res, next) {
     try {
       const doc = await Document.findOne({

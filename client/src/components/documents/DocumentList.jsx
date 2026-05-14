@@ -4,14 +4,32 @@ import { format } from 'date-fns';
 import StatusBadge from './StatusBadge';
 import SkeletonRow from '../ui/SkeletonRow';
 import Button from '../ui/Button';
+import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
-export default function DocumentList({ documents, loading, onDelete, onReprocess }) {
+export default function DocumentList({ documents, loading, onDelete, onReprocess, fetchDocuments }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+  const { addToast } = useToast();
 
   const handleConfirmDelete = async (id) => {
     await onDelete(id);
     setDeleteConfirm(null);
   };
+
+  const handleRename = async (id, newName) => {
+    setEditingId(null);
+    const doc = documents.find(d => d._id === id);
+    if (!newName.trim() || newName.trim() === doc?.originalName) return;
+    try {
+      await api.patch(`/documents/${id}/rename`, { originalName: newName.trim() });
+      fetchDocuments();
+    } catch {
+      addToast('Failed to rename document', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-background-secondary rounded-xl border border-border-subtle p-6 h-full flex flex-col">
@@ -50,40 +68,58 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
             <p className="text-xs text-text-muted mt-1">Upload a PDF, DOCX, or XLSX to get started</p>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse min-w-[600px]">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-background-elevated border-b border-border-subtle text-xs uppercase tracking-wider text-text-secondary">
                 <th className="px-6 py-4 font-medium">Name</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium text-center">Chunks</th>
-                <th className="px-6 py-4 font-medium">Uploaded At</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-6 py-4 font-medium w-24">Status</th>
+                <th className="px-6 py-4 font-medium w-20 text-center">Chunks</th>
+                <th className="px-6 py-4 font-medium w-36">Uploaded At</th>
+                <th className="px-6 py-4 font-medium w-24 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-sm">
               {documents.map((doc) => (
                 <tr key={doc._id} className="hover:bg-background-hover transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                  <td className="px-6 py-4 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <FileText size={16} className="text-text-muted shrink-0" />
-                      <div className="flex flex-col">
-                        <span className="font-mono text-text-primary truncate max-w-[200px]" title={doc.originalName}>
-                          {doc.originalName}
-                        </span>
+                      <div className="flex flex-col min-w-0">
+                        {editingId === doc._id ? (
+                          <input
+                            autoFocus
+                            value={editingName}
+                            onChange={e => setEditingName(e.target.value)}
+                            onBlur={() => handleRename(doc._id, editingName)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRename(doc._id, editingName);
+                              if (e.key === 'Escape') setEditingId(null);
+                            }}
+                            className="bg-transparent border-b border-accent text-sm text-text-primary outline-none w-full"
+                          />
+                        ) : (
+                          <p
+                            className="text-sm text-text-primary truncate cursor-pointer hover:text-accent transition-colors"
+                            onClick={() => { setEditingId(doc._id); setEditingName(doc.originalName); }}
+                            title="Click to rename"
+                          >
+                            {doc.originalName}
+                          </p>
+                        )}
                         <span className="text-xs text-text-muted">{(doc.size / 1024 / 1024).toFixed(2)} MB</span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 w-24 whitespace-nowrap">
                     <StatusBadge status={doc.status} />
                   </td>
-                  <td className="px-6 py-4 text-center text-text-secondary">
+                  <td className="px-6 py-4 w-20 text-center text-text-secondary">
                     {doc.chunkCount}
                   </td>
-                  <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
+                  <td className="px-6 py-4 w-36 text-text-secondary whitespace-nowrap">
                     {format(new Date(doc.createdAt), 'MMM d, yyyy HH:mm')}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 w-24 text-right">
                     <div className="flex items-center justify-end gap-1">
                       {doc.status === 'failed' && (
                         <button

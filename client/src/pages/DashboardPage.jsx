@@ -38,7 +38,7 @@ const StatCard = ({ icon, label, value, onClick, isActive }) => (
 );
 
 export default function DashboardPage() {
-  const { documents, pagination, loading, error, uploadDocument, deleteDocument, reprocessDocument } = useDocuments();
+  const { documents, pagination, loading, error, uploadDocument, deleteDocument, reprocessDocument, fetchDocuments } = useDocuments();
   const { pendingRequests, fetchPendingRequests } = useJoinRequests();
   const { memberCount } = useOrgStats();
   const [activeTab, setActiveTab] = useState('documents');
@@ -188,6 +188,7 @@ export default function DashboardPage() {
                 loading={loading}
                 onDelete={deleteDocument}
                 onReprocess={reprocessDocument}
+                fetchDocuments={fetchDocuments}
               />
             </div>
           </div>

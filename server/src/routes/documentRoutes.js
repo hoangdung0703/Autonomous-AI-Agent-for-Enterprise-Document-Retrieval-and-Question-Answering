@@ -18,6 +18,9 @@ router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMid
 // DELETE /:id — admin + org member only
 router.delete('/:id', authMiddleware, adminMiddleware, orgMiddleware, documentController.deleteDocument);
 
+// PATCH /:id/rename — admin + org member only
+router.patch('/:id/rename', authMiddleware, adminMiddleware, orgMiddleware, documentController.rename.bind(documentController));
+
 // POST /:id/reprocess — admin + org member only
 router.post('/:id/reprocess', authMiddleware, adminMiddleware, orgMiddleware, documentController.reprocess);
 
