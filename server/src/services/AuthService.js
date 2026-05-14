@@ -1,7 +1,9 @@
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const env = require('../config/env');
+const emailService = require('./EmailService');
 
 class AuthService {
   async register(name, email, password, role = 'user') {
@@ -69,6 +71,39 @@ class AuthService {
   sanitizeUser(user) {
     const { password, ...userWithoutPassword } = user.toObject();
     return userWithoutPassword;
+  }
+
+  async requestPasswordReset(email) {
+    const user = await User.findOne({ email });
+
+    // Always return without error — never reveal whether email exists
+    if (!user) return;
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetToken = token;
+    user.resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+    await user.save();
+
+    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+    await emailService.sendPasswordResetEmail(user.email, resetLink);
+  }
+
+  async resetPassword(token, newPassword) {
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: new Date() }
+    });
+
+    if (!user) {
+      const err = new Error('Reset link is invalid or has expired');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
   }
 }
 

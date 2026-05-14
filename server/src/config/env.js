@@ -15,7 +15,9 @@ const requiredVars = [
   'CHROMA_HOST',
   'CHROMA_COLLECTION',
   'MAX_FILE_SIZE_MB',
-  'UPLOAD_DIR'
+  'UPLOAD_DIR',
+  'RESEND_API_KEY',
+  'FRONTEND_URL'
 ];
 
 for (const envVar of requiredVars) {
@@ -37,5 +39,7 @@ module.exports = {
   CHROMA_HOST: process.env.CHROMA_HOST,
   CHROMA_COLLECTION: process.env.CHROMA_COLLECTION,
   MAX_FILE_SIZE_MB: parseInt(process.env.MAX_FILE_SIZE_MB, 10),
-  UPLOAD_DIR: process.env.UPLOAD_DIR
+  UPLOAD_DIR: process.env.UPLOAD_DIR,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  FRONTEND_URL: process.env.FRONTEND_URL
 };

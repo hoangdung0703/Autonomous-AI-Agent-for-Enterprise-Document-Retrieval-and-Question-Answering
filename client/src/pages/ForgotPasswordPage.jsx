@@ -1,31 +1,28 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { Mail } from 'lucide-react';
+import api from '../services/api';
 import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Please fill in all fields');
+    if (!email) {
+      setError('Please enter your email address');
       return;
     }
-
     setIsSubmitting(true);
     setError('');
-
     try {
-      await login(email, password);
+      await api.post('/auth/forgot-password', { email });
+      setSuccess(true);
     } catch (err) {
-      setError(typeof err === 'string' ? err : 'Invalid email or password');
+      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -39,9 +36,7 @@ export default function LoginPage() {
         position: 'absolute', top: '-20%', left: '-15%',
         width: '600px', height: '600px',
         background: 'radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 65%)',
-        pointerEvents: 'none',
-        zIndex: 0,
-        filter: 'blur(80px)'
+        pointerEvents: 'none', zIndex: 0, filter: 'blur(80px)'
       }} />
 
       {/* Bottom-right accent glow */}
@@ -49,9 +44,7 @@ export default function LoginPage() {
         position: 'absolute', bottom: '-10%', right: '-5%',
         width: '500px', height: '500px',
         background: 'radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        zIndex: 0,
-        filter: 'blur(80px)'
+        pointerEvents: 'none', zIndex: 0, filter: 'blur(80px)'
       }} />
 
       {/* Center subtle mesh */}
@@ -68,8 +61,7 @@ export default function LoginPage() {
         position: 'absolute', inset: 0,
         backgroundImage: 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)',
         backgroundSize: '28px 28px',
-        pointerEvents: 'none',
-        zIndex: 0
+        pointerEvents: 'none', zIndex: 0
       }} />
 
       {/* Starfield */}
@@ -86,11 +78,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm" style={{ position: 'relative', zIndex: 1 }}>
         <div className="text-center mb-8">
           <img src="/logo.png" alt="Archon" className="w-10 h-10 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-text-primary">Welcome to Archon</h1>
-          <p className="text-sm text-text-secondary mt-1">Your AI-powered knowledge base. Ask anything, find everything.</p>
+          <h1 className="text-2xl font-semibold text-text-primary">Forgot your password?</h1>
+          <p className="text-sm text-text-secondary mt-1">Enter your email and we'll send you a reset link.</p>
         </div>
 
-        <div 
+        <div
           className="rounded-xl p-10 relative overflow-hidden"
           style={{
             backgroundColor: 'rgba(20,20,28,0.90)',
@@ -103,58 +95,56 @@ export default function LoginPage() {
           <div style={{
             height: '1px',
             background: 'linear-gradient(to right, transparent, rgba(99,102,241,0.8) 30%, rgba(139,92,246,0.6) 70%, transparent)',
-            marginBottom: '28px',
-            borderRadius: '1px'
+            marginBottom: '28px', borderRadius: '1px'
           }} />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Email address"
-              type="email"
-              icon={Mail}
-              placeholder="admin@archon.local"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting}
-            />
-            <Input
-              label="Password"
-              type="password"
-              icon={Lock}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isSubmitting}
-            />
-
-            {error && (
-              <div className="text-sm text-status-failed bg-status-failed-bg border border-status-failed/20 p-3 rounded-lg text-center">
-                {error}
+          {success ? (
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-status-ready-bg border border-status-ready/30 flex items-center justify-center mx-auto">
+                <Mail size={20} className="text-status-ready" />
               </div>
-            )}
+              <p className="text-sm text-text-primary font-medium">Check your email</p>
+              <p className="text-xs text-text-muted">A reset link has been sent if that email exists in our system.</p>
+              <Link
+                to="/login"
+                className="block text-xs text-accent hover:text-accent-hover transition-colors mt-4"
+              >
+                ← Back to Sign In
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                label="Email address"
+                type="email"
+                icon={Mail}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+              />
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-lg py-2.5 text-sm font-medium transition-all duration-150 shadow-lg shadow-accent/20 disabled:opacity-50 mt-2"
-            >
-              {isSubmitting ? 'Signing in...' : 'Sign In'}
-            </button>
+              {error && (
+                <div className="text-sm text-status-failed bg-status-failed-bg border border-status-failed/20 p-3 rounded-lg text-center">
+                  {error}
+                </div>
+              )}
 
-            <Link
-              to="/forgot-password"
-              className="text-xs text-text-muted hover:text-text-secondary block text-center mt-2"
-            >
-              Forgot your password?
-            </Link>
-          </form>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-lg py-2.5 text-sm font-medium transition-all duration-150 shadow-lg shadow-accent/20 disabled:opacity-50 mt-2"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+              </button>
 
-          <p className="text-xs text-text-muted text-center mt-5">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-accent hover:text-accent-hover transition-colors">
-              Sign up
-            </Link>
-          </p>
+              <p className="text-xs text-text-muted text-center mt-2">
+                <Link to="/login" className="text-accent hover:text-accent-hover transition-colors">
+                  ← Back to Sign In
+                </Link>
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </div>

@@ -24,4 +24,20 @@ const login = [
     .withMessage('Password is required'),
 ];
 
-module.exports = { register, login };
+const forgotPassword = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address'),
+];
+
+const resetPassword = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  body('password')
+    .isLength({ min: 6, max: 100 })
+    .withMessage('Password must be between 6 and 100 characters'),
+];
+
+module.exports = { register, login, forgotPassword, resetPassword };
