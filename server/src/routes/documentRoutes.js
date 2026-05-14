@@ -12,6 +12,9 @@ const router = express.Router();
 // GET / — any org member can read documents (for NewConversationModal document picker)
 router.get('/', authMiddleware, orgMiddleware, documentController.getAll);
 
+// GET /:id/preview — any org member can preview documents
+router.get('/:id/preview', authMiddleware, orgMiddleware, documentController.preview.bind(documentController));
+
 // POST /upload — admin + org member only
 router.post('/upload', authMiddleware, adminMiddleware, orgMiddleware, uploadMiddleware.single('file'), validate(upload), documentController.upload);
 

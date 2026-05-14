@@ -70,6 +70,21 @@ class ConversationController {
       next(error);
     }
   }
+
+  async updateDocuments(req, res, next) {
+    try {
+      const { documentIds } = req.body;
+      const conversation = await conversationService.updateDocuments(
+        req.params.id,
+        req.user.id,
+        documentIds
+      );
+      res.status(200).json({ conversation });
+    } catch (error) {
+      if (error.status) res.status(error.status);
+      next(error);
+    }
+  }
 }
 
 module.exports = new ConversationController();

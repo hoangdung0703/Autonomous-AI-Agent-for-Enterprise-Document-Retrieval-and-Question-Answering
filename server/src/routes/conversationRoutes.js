@@ -14,6 +14,7 @@ router.post('/', validate(create), conversationController.create.bind(conversati
 router.get('/', conversationController.list.bind(conversationController));
 router.get('/:id', conversationController.getOne.bind(conversationController));
 router.patch('/:id/title', validate(rename), conversationController.rename.bind(conversationController));
+router.patch('/:id/documents', conversationController.updateDocuments.bind(conversationController));
 router.delete('/:id', conversationController.remove.bind(conversationController));
 router.post('/:id/query', queryLimiter, validate(query), conversationController.query.bind(conversationController));
 

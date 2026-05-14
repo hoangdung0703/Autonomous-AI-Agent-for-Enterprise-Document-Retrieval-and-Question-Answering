@@ -165,6 +165,24 @@ class DocumentController {
       next(err);
     }
   }
+
+  async preview(req, res, next) {
+    try {
+      const doc = await Document.findOne({
+        _id: req.params.id,
+        organizationId: req.organizationId
+      });
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+      const filePath = storageService.getAbsolutePath(doc.fileName);
+      res.setHeader('Content-Type', doc.mimeType);
+      const encodedName = encodeURIComponent(doc.originalName);
+      res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${encodedName}`);
+      res.sendFile(filePath);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new DocumentController();

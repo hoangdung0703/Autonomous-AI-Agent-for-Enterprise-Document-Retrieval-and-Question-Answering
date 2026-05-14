@@ -7,7 +7,7 @@ import ChatInput from '../components/chat/ChatInput';
 
 export default function ChatPage() {
   const { id: conversationId } = useParams();
-  const { conversation, isLoading, isSending, error, sendMessage } = useConversation(conversationId);
+  const { conversation, isLoading, isSending, error, sendMessage, refetch } = useConversation(conversationId);
 
   // Empty state — no conversation selected
   if (!conversationId) {
@@ -35,7 +35,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       {/* Conversation title + document chips */}
-      <ConversationHeader conversation={conversation} />
+      <ConversationHeader conversation={conversation} onUpdate={refetch} />
 
       {/* Messages */}
       <ChatWindow messages={conversation?.messages || []} loading={isSending} conversationId={conversationId} />

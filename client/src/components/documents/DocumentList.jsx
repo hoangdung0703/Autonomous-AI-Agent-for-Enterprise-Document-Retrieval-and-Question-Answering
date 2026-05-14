@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, FileText, RefreshCw } from 'lucide-react';
+import { Trash2, FileText, RefreshCw, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import StatusBadge from './StatusBadge';
 import SkeletonRow from '../ui/SkeletonRow';
@@ -12,6 +12,19 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
   const { addToast } = useToast();
+
+  const handlePreview = async (doc) => {
+    try {
+      const response = await api.get(`/documents/${doc._id}/preview`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: doc.mimeType });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch {
+      addToast('Failed to preview document', 'error');
+    }
+  };
 
   const handleConfirmDelete = async (id) => {
     await onDelete(id);
@@ -75,7 +88,7 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
                 <th className="px-6 py-4 font-medium w-24">Status</th>
                 <th className="px-6 py-4 font-medium w-20 text-center">Chunks</th>
                 <th className="px-6 py-4 font-medium w-36">Uploaded At</th>
-                <th className="px-6 py-4 font-medium w-24 text-right">Actions</th>
+                <th className="px-6 py-4 font-medium w-32 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-sm">
@@ -119,8 +132,15 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
                   <td className="px-6 py-4 w-36 text-text-secondary whitespace-nowrap">
                     {format(new Date(doc.createdAt), 'MMM d, yyyy HH:mm')}
                   </td>
-                  <td className="px-6 py-4 w-24 text-right">
+                  <td className="px-6 py-4 w-32 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handlePreview(doc)}
+                        className="p-2 text-text-muted hover:text-accent transition-colors rounded"
+                        title="Preview document"
+                      >
+                        <Eye size={16} />
+                      </button>
                       {doc.status === 'failed' && (
                         <button
                           onClick={() => onReprocess(doc._id)}

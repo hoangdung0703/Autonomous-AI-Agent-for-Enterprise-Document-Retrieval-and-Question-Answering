@@ -133,6 +133,27 @@ class ConversationService {
     return { answer, sources };
   }
 
+  async updateDocuments(conversationId, userId, documentIds) {
+    const conversation = await this._getOwnedConversation(conversationId, userId);
+    const docs = await Document.find({
+      _id: { $in: documentIds },
+      status: 'ready',
+      organizationId: conversation.organizationId
+    });
+    if (docs.length !== documentIds.length) {
+      throw { status: 400, message: 'Some documents are invalid or not ready' };
+    }
+    if (documentIds.length < 1 || documentIds.length > 10) {
+      throw { status: 400, message: 'Conversation must have between 1 and 10 documents' };
+    }
+
+    conversation.documentIds = documentIds;
+    conversation.updatedAt = new Date();
+    await conversation.save({ validateModifiedOnly: true });
+    await conversation.populate('documentIds', '_id originalName status');
+    return conversation;
+  }
+
   // Private helper — fetch conversation and verify ownership
   async _getOwnedConversation(conversationId, userId) {
     const conversation = await Conversation.findById(conversationId);

@@ -1,6 +1,10 @@
-import { FileText } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Settings2 } from 'lucide-react';
+import ManageDocumentsModal from './ManageDocumentsModal';
 
-export default function ConversationHeader({ conversation }) {
+export default function ConversationHeader({ conversation, onUpdate }) {
+  const [showManageModal, setShowManageModal] = useState(false);
+
   if (!conversation) return null;
 
   return (
@@ -9,7 +13,7 @@ export default function ConversationHeader({ conversation }) {
         {conversation.title}
       </h2>
       {conversation.documentIds && conversation.documentIds.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {conversation.documentIds.map((doc) => (
             <span
               key={doc._id}
@@ -20,7 +24,22 @@ export default function ConversationHeader({ conversation }) {
               <span className="truncate">{doc.originalName}</span>
             </span>
           ))}
+          <button
+            onClick={() => setShowManageModal(true)}
+            className="p-1.5 text-text-muted hover:text-text-primary hover:bg-background-hover rounded-md transition-colors"
+            title="Manage documents"
+          >
+            <Settings2 size={14} />
+          </button>
         </div>
+      )}
+
+      {showManageModal && (
+        <ManageDocumentsModal
+          conversation={conversation}
+          onUpdate={onUpdate}
+          onClose={() => setShowManageModal(false)}
+        />
       )}
     </div>
   );

@@ -7,6 +7,24 @@ export function useConversation(conversationId) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState(null);
 
+  const refetch = useCallback(async () => {
+    if (!conversationId) {
+      setConversation(null);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get(`/conversations/${conversationId}`);
+      setConversation(data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load conversation');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversationId]);
+
   useEffect(() => {
     if (!conversationId) {
       setConversation(null);
@@ -71,5 +89,5 @@ export function useConversation(conversationId) {
     }
   }, [conversationId]);
 
-  return { conversation, isLoading, isSending, error, sendMessage };
+  return { conversation, isLoading, isSending, error, sendMessage, refetch };
 }
