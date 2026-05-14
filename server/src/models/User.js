@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
     ref: 'Organization',
     default: null,
   },
+  avatar: {
+    type: String,
+    default: null,
+  },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 module.exports = mongoose.model('User', userSchema);

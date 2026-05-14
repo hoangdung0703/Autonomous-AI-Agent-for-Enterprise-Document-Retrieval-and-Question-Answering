@@ -10,6 +10,7 @@ const conversationRoutes = require('./routes/conversationRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
 const joinRequestRoutes = require('./routes/joinRequestRoutes');
 const inviteCodeRoutes = require('./routes/inviteCodeRoutes');
+const userRoutes = require('./routes/userRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const env = require('./config/env');
 
@@ -23,7 +24,7 @@ app.use(globalLimiter);
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173' }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -32,6 +33,7 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/join-requests', joinRequestRoutes);
 app.use('/api/invite-codes', inviteCodeRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', async (req, res) => {
   const start = Date.now();

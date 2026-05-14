@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ChatPage from './pages/ChatPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -22,6 +23,9 @@ function App() {
 
           {/* Active conversation */}
           <Route path="/conversations/:id" element={<ChatPage />} />
+
+          {/* Profile */}
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* Admin only */}
           <Route element={<ProtectedRoute adminOnly={true} />}>
