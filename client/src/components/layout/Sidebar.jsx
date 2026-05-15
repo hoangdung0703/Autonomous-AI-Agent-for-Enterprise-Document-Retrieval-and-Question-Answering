@@ -8,8 +8,8 @@ import NewConversationModal from '../chat/NewConversationModal';
 import SkeletonRow from '../ui/SkeletonRow';
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout } = useAuth();
-  const { organizationName } = useAuth();
+  const { user, avatar, logout, organizationName } = useAuth();
+  console.log('[Sidebar] avatar from useAuth:', avatar ? 'EXISTS' : 'NULL');
   const navigate = useNavigate();
   const { id: activeConversationId } = useParams();
   const { conversations, loading, createConversation, deleteConversation, renameConversation } = useConversations();
@@ -279,8 +279,8 @@ export default function Sidebar({ isOpen, onClose }) {
             onClick={onClose}
             className="flex items-center gap-2 px-3 py-1.5 text-xs text-text-muted hover:text-text-primary transition-colors"
           >
-            {user?.avatar
-              ? <img src={user.avatar} className="w-5 h-5 rounded-full object-cover" />
+            {avatar
+              ? <img src={avatar} className="w-5 h-5 rounded-full object-cover" />
               : <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[10px] text-white font-medium">{user?.name?.[0]?.toUpperCase()}</div>
             }
             <span>{user?.name}</span>

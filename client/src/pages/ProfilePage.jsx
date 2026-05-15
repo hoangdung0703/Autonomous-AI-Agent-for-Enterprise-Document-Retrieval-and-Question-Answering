@@ -10,7 +10,9 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null);
 
   const [name, setName] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    () => localStorage.getItem('archon_avatar') || null
+  );
   const [avatarBase64, setAvatarBase64] = useState(undefined);
   const [isSaving, setIsSaving] = useState(false);
 

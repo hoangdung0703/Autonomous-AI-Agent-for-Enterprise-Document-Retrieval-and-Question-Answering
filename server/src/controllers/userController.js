@@ -58,7 +58,7 @@ class UserController {
       const orgName = user.organizationId?.name || null;
       const token = authService.generateToken(user, orgName);
 
-      res.status(200).json({ token });
+      res.status(200).json({ token, user: { name: user.name, email: user.email, avatar: user.avatar, role: user.role } });
     } catch (err) {
       next(err);
     }
