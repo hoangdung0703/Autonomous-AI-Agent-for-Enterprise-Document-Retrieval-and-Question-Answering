@@ -5,6 +5,12 @@ export default function SourceCitations({ sources }) {
   const [showSources, setShowSources] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
+  const cleanFileName = (fileName) => {
+    return fileName
+      .replace(/^\d+-\d+-/, '')
+      .replace(/\.[^/.]+$/, '');
+  };
+
   if (!sources?.length) return null;
 
   return (
@@ -14,7 +20,7 @@ export default function SourceCitations({ sources }) {
         className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
       >
         <ChevronDown size={12} className={showSources ? 'rotate-180 transition-transform' : 'transition-transform'} />
-        {sources.length} source{sources.length > 1 ? 's' : ''}
+        View {sources.length} source passage{sources.length > 1 ? 's' : ''}
       </button>
 
       {showSources && (
@@ -28,10 +34,10 @@ export default function SourceCitations({ sources }) {
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <FileText size={12} className="text-text-muted flex-shrink-0" />
-                  <span className="font-mono text-xs text-text-muted truncate">
-                    {source.fileName.replace(/^\d+-\d+-/, '')}
+                  <span className="text-xs text-text-muted truncate">
+                    {cleanFileName(source.fileName)}
                   </span>
-                  <span className="text-xs text-text-muted flex-shrink-0">#{source.chunkIndex}</span>
+                  <span className="text-[10px] text-text-muted flex-shrink-0">~p.{source.chunkIndex}</span>
                 </div>
                 <ChevronDown
                   size={12}
@@ -41,8 +47,16 @@ export default function SourceCitations({ sources }) {
 
               {/* Excerpt — shown when expanded */}
               {expandedIndex === i && source.excerpt && (
-                <div className="px-3 py-2 border-t border-border-subtle bg-background-primary">
-                  <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-wrap">
+                <div
+                  style={{
+                    borderLeft: '2px solid rgba(99,102,241,0.5)',
+                    backgroundColor: 'rgba(99,102,241,0.05)',
+                    padding: '10px 14px',
+                    margin: '4px 0',
+                    borderRadius: '0 6px 6px 0'
+                  }}
+                >
+                  <p className="text-xs text-text-secondary leading-relaxed">
                     {source.excerpt}
                   </p>
                 </div>
