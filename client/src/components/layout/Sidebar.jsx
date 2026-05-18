@@ -111,7 +111,7 @@ export default function Sidebar({ isOpen, onClose }) {
               <span className="text-sm font-semibold text-text-primary">Archon</span>
             </Link>
             {organizationName && (
-              <span className="text-[10px] text-text-muted pl-12 truncate -mt-1 pb-1">{organizationName}</span>
+              <span className="text-xs text-text-secondary pl-12 truncate -mt-1 pb-1">{organizationName}</span>
             )}
           </div>
         </div>

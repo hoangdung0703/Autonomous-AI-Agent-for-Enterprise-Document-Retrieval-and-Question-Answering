@@ -78,7 +78,7 @@ export default function UploadForm({ onUpload }) {
       <h3 className="text-lg font-semibold text-text-primary mb-4">Upload Document</h3>
       
       <div 
-        className={`flex-1 min-h-[200px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-colors cursor-pointer ${
+        className={`min-h-48 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-colors cursor-pointer ${
           isDragOver ? 'border-accent bg-accent-subtle/30' : 'border-border-default hover:border-border-strong hover:bg-background-hover'
         }`}
         onDragOver={handleDragOver}

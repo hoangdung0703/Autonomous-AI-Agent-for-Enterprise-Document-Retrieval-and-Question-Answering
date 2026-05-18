@@ -79,10 +79,10 @@ export default function ProfilePage() {
   const initial = (profile?.name || user?.name || '?')[0].toUpperCase();
 
   const glassCard = {
-    backgroundColor: 'rgba(20,20,28,0.80)',
-    backdropFilter: 'blur(16px)',
+    backgroundColor: 'rgba(20,20,28,0.90)',
+    backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255,255,255,0.07)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+    boxShadow: '0 0 0 1px rgba(99,102,241,0.08), 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
   };
 
   return (
@@ -91,6 +91,12 @@ export default function ProfilePage() {
         <h1 className="text-lg font-semibold text-text-primary mb-6">Profile</h1>
 
         <div className="rounded-xl p-6 space-y-5" style={glassCard}>
+          <div style={{
+            height: '1px',
+            background: 'linear-gradient(to right, transparent, rgba(99,102,241,0.8) 30%, rgba(139,92,246,0.6) 70%, transparent)',
+            marginBottom: '24px',
+            borderRadius: '1px'
+          }} />
           {/* Avatar */}
           <div className="flex flex-col items-center gap-2">
             <button
@@ -159,6 +165,7 @@ export default function ProfilePage() {
                 style={{
                   backgroundColor: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.06)',
+                  opacity: 0.6
                 }}
               >
                 {value}
@@ -182,7 +189,10 @@ export default function ProfilePage() {
             onClick={handleSave}
             disabled={isSaving || loading}
             className="w-full py-2.5 text-sm font-medium text-white rounded-lg transition-all duration-150 disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{
+              background: 'linear-gradient(to right, #6366f1, rgba(99,102,241,0.8))',
+              boxShadow: '0 4px 15px rgba(99,102,241,0.3)'
+            }}
           >
             {isSaving ? 'Saving…' : 'Save Changes'}
           </button>

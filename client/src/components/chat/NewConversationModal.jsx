@@ -28,7 +28,7 @@ export default function NewConversationModal({ onClose, onCreate }) {
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [hoveredDoc, setHoveredDoc] = useState(null);
+  const [selectedInfoDoc, setSelectedInfoDoc] = useState(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -89,11 +89,21 @@ export default function NewConversationModal({ onClose, onCreate }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(4px)'
+      }}
       onClick={handleBackdrop}
     >
       <div
-        className="w-full max-w-lg bg-background-secondary border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4 relative overflow-visible"
+        className="w-full max-w-lg border border-border-subtle rounded-xl shadow-xl animate-fade-in mx-4 relative"
+        style={{
+          backgroundColor: 'rgba(20,20,28,0.92)',
+          backdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '0 0 0 1px rgba(99,102,241,0.08), 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
@@ -108,12 +118,21 @@ export default function NewConversationModal({ onClose, onCreate }) {
 
         {/* Body */}
         <div className="px-6 py-5 space-y-5">
+          <div style={{
+            height: '1px',
+            background: 'linear-gradient(to right, transparent, rgba(99,102,241,0.8) 30%, rgba(139,92,246,0.6) 70%, transparent)',
+            marginBottom: '20px'
+          }} />
           <Input
             label="Title (optional)"
             placeholder="Leave blank to auto-generate from documents"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isSubmitting}
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)'
+            }}
           />
 
           <div>
@@ -133,26 +152,68 @@ export default function NewConversationModal({ onClose, onCreate }) {
             ) : (
               <div className="max-h-52 overflow-y-auto space-y-1 rounded-lg border border-border-subtle bg-background-elevated p-1">
                 {documents.map((doc) => (
-                  <div
-                    key={doc._id}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-hover cursor-pointer"
-                    onMouseEnter={() => setHoveredDoc(doc)}
-                    onMouseLeave={() => setHoveredDoc(null)}
-                    onClick={() => !isSubmitting && toggleDoc(doc._id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(doc._id)}
-                      onChange={() => toggleDoc(doc._id)}
-                      disabled={isSubmitting}
-                      className="w-4 h-4 accent-accent rounded flex-shrink-0"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary truncate">{doc.originalName}</p>
-                      <p className="text-xs text-text-muted">{formatFileSize(doc.size)} · {doc.chunkCount ?? 0} chunks</p>
+                  <div key={doc._id}>
+                    <div
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-hover cursor-pointer"
+                      onClick={() => !isSubmitting && toggleDoc(doc._id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(doc._id)}
+                        onChange={() => toggleDoc(doc._id)}
+                        disabled={isSubmitting}
+                        className="w-4 h-4 accent-accent rounded flex-shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-primary truncate">{doc.originalName}</p>
+                        <p className="text-xs text-text-muted">{formatFileSize(doc.size)} · {doc.chunkCount ?? 0} chunks</p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedInfoDoc(selectedInfoDoc?._id === doc._id ? null : doc);
+                        }}
+                        className={`flex-shrink-0 transition-colors ${
+                          selectedInfoDoc?._id === doc._id
+                            ? 'text-accent'
+                            : 'text-text-muted hover:text-text-secondary'
+                        }`}
+                      >
+                        <Info size={14} />
+                      </button>
                     </div>
-                    <Info size={14} className="text-text-muted flex-shrink-0" />
+
+                    {selectedInfoDoc?._id === doc._id && (
+                      <div style={{
+                        backgroundColor: 'rgba(20,20,28,0.95)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginTop: '4px',
+                        marginBottom: '4px'
+                      }}>
+                        <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2">Document Info</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="text-[10px] text-text-muted">Size</p>
+                            <p className="text-xs text-text-primary">{formatFileSize(doc.size)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-text-muted">Chunks</p>
+                            <p className="text-xs text-text-primary">{doc.chunkCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-text-muted">Uploaded</p>
+                            <p className="text-xs text-text-primary">{new Date(doc.createdAt).toLocaleDateString('vi-VN')}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-text-muted">By</p>
+                            <p className="text-xs text-text-primary">{doc.uploadedBy?.name || 'Admin'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -169,46 +230,33 @@ export default function NewConversationModal({ onClose, onCreate }) {
 
         {/* Footer */}
         <div className="flex justify-end gap-3 px-6 py-4 border-t border-border-subtle">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isSubmitting}
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)'
+            }}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             loading={isSubmitting}
             disabled={loadingDocs || isSubmitting}
+            variant="ghost"
+            className="text-white"
+            style={{
+              background: 'linear-gradient(to right, #6366f1, rgba(99,102,241,0.8))',
+              boxShadow: '0 4px 15px rgba(99,102,241,0.3)',
+              border: 'none'
+            }}
           >
             Create Conversation
           </Button>
         </div>
 
-        {/* Document info popover */}
-        {hoveredDoc && (
-          <div className="absolute left-full ml-3 top-0 w-64 bg-background-elevated border border-border-subtle rounded-xl p-4 shadow-lg z-10">
-            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-3">Document Info</p>
-            <div className="space-y-2">
-              <div>
-                <p className="text-[10px] text-text-muted">File name</p>
-                <p className="text-xs text-text-primary font-mono break-all">{hoveredDoc.originalName}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Size</p>
-                <p className="text-xs text-text-primary">{formatFileSize(hoveredDoc.size)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Chunks embedded</p>
-                <p className="text-xs text-text-primary">{hoveredDoc.chunkCount ?? 0} chunks</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Uploaded</p>
-                <p className="text-xs text-text-primary">{new Date(hoveredDoc.createdAt).toLocaleDateString('vi-VN')}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-text-muted">Uploaded by</p>
-                <p className="text-xs text-text-primary">{hoveredDoc.uploadedBy?.name || 'Admin'}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
