@@ -9,22 +9,24 @@ class VectorDBService {
     });
   }
 
-  async connect() {
-    try {
-      // Ping chroma to verify connection
-      await this.client.heartbeat();
-      logger.info('ChromaDB Connected successfully.');
-      
-      // Attempt to get or create the collection to ensure it's ready
-      this.collection = await this.client.getOrCreateCollection({
-        name: env.CHROMA_COLLECTION
-      });
-      logger.info(`ChromaDB Collection '${env.CHROMA_COLLECTION}' ready.`);
-    } catch (error) {
-      logger.error(`ChromaDB Connection Error: ${error.message}`);
-      // Don't exit process strictly, just log error. Or maybe we should exit?
-      // For now, allow server to start even if Chroma is down, but log heavily.
+  async connect(retries = 5, delayMs = 3000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await this.client.heartbeat();
+        logger.info('ChromaDB Connected successfully.');
+        this.collection = await this.client.getOrCreateCollection({
+          name: env.CHROMA_COLLECTION
+        });
+        logger.info(`ChromaDB Collection '${env.CHROMA_COLLECTION}' ready.`);
+        return;
+      } catch (error) {
+        logger.error(`ChromaDB Connection Error (attempt ${attempt}/${retries}): ${error.message}`);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
     }
+    logger.error('ChromaDB failed to connect after all retries. Server will start without ChromaDB.');
   }
 
   async upsertChunks(ids, embeddings, metadatas, documents) {
