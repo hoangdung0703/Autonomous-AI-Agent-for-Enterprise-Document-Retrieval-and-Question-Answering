@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 class VectorDBService {
   constructor() {
     this.client = new ChromaClient({
-      path: env.CHROMA_HOST
+      url: env.CHROMA_HOST
     });
   }
 
