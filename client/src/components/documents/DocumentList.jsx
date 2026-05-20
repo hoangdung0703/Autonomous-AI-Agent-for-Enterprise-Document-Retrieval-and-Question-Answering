@@ -167,17 +167,51 @@ export default function DocumentList({ documents, loading, onDelete, onReprocess
       </div>
 
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-background-elevated border border-border-subtle rounded-xl p-6 max-w-sm w-full mx-4">
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+        >
+          <div
+            className="rounded-xl p-6 max-w-sm w-full mx-4"
+            style={{
+              backgroundColor: 'rgba(20,20,28,0.92)',
+              backdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              boxShadow: '0 0 0 1px rgba(99,102,241,0.08), 0 32px 64px rgba(0,0,0,0.6)'
+            }}
+          >
+            {/* Red accent top line — signals destructive action */}
+            <div style={{
+              height: '1px',
+              background: 'linear-gradient(to right, transparent, rgba(239,68,68,0.6) 30%, rgba(239,68,68,0.4) 70%, transparent)',
+              marginBottom: '16px'
+            }} />
+
             <h3 className="text-text-primary font-semibold mb-2">Delete Document</h3>
             <p className="text-text-secondary text-sm mb-6">
               Are you sure you want to delete this document? This will also remove all its embedded vectors and cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
-              <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteConfirm(null)}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)'
+                }}
+              >
                 Cancel
               </Button>
-              <Button variant="danger" onClick={() => handleConfirmDelete(deleteConfirm)}>
+              <Button
+                variant="danger"
+                onClick={() => handleConfirmDelete(deleteConfirm)}
+                style={{
+                  background: 'linear-gradient(to right, #ef4444, rgba(239,68,68,0.8))',
+                  boxShadow: '0 4px 15px rgba(239,68,68,0.3)',
+                  border: 'none',
+                  color: 'white'
+                }}
+              >
                 Delete
               </Button>
             </div>
