@@ -44,7 +44,7 @@ app.get('/api/health', async (req, res) => {
   // Check ChromaDB
   let chromaStatus = 'ok';
   try {
-    const client = new ChromaClient({ path: env.CHROMA_HOST });
+    const chromaUrl = new URL(env.CHROMA_HOST); const client = new ChromaClient({ host: chromaUrl.hostname, port: chromaUrl.port ? Number(chromaUrl.port) : (chromaUrl.protocol === 'https:' ? 443 : 80), ssl: chromaUrl.protocol === 'https:' });
     await client.heartbeat();
   } catch {
     chromaStatus = 'error';
