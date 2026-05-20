@@ -12,27 +12,33 @@ class VectorDBService {
 
     this.client = new ChromaClient({ host, port, ssl });
     this.collection = null;
+    this.connect();
   }
 
-  async connect(retries = 5, delayMs = 5000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
+  async connect() {
+    // Non-blocking infinite retry loop — never throws, never blocks startup
+    while (true) {
       try {
         await this.client.heartbeat();
         this.collection = await this.client.getOrCreateCollection({
           name: env.CHROMA_COLLECTION
         });
         logger.info(`ChromaDB Connected. Collection '${env.CHROMA_COLLECTION}' ready.`);
-        return;
-      } catch (error) {
-        logger.error(`ChromaDB attempt ${attempt}/${retries}: ${error.message}`);
-        if (attempt < retries) await new Promise(r => setTimeout(r, delayMs));
+        return; // exit loop on success
+      } catch (err) {
+        logger.warn(`ChromaDB not ready, retrying in 15s: ${err.message}`);
+        await new Promise(r => setTimeout(r, 15000));
       }
     }
-    logger.error('ChromaDB failed to connect after all retries.');
   }
 
   async ensureConnected() {
-    if (!this.collection) await this.connect();
+    if (!this.collection) {
+      const err = new Error('ChromaDB is warming up. Please retry in a moment.');
+      err.statusCode = 503;
+      err.retryAfter = 30;
+      throw err;
+    }
   }
 
   async upsertChunks(ids, embeddings, metadatas, documents) {

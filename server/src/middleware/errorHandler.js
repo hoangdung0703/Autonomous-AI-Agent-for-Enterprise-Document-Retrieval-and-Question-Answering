@@ -8,6 +8,12 @@ const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
   }
 
+  // 503 — dependency warming up (e.g. ChromaDB cold start)
+  if (err.statusCode === 503) {
+    res.set('Retry-After', String(err.retryAfter || 30));
+    return res.status(503).json({ error: err.message });
+  }
+
   res.status(statusCode).json({
     error: {
       message: err.message,
