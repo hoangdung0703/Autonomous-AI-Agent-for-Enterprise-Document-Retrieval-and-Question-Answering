@@ -89,7 +89,6 @@ class ConversationService {
 
     const conversation = await this._getOwnedConversation(conversationId, userId);
     conversation.title = newTitle.trim().slice(0, 100);
-    conversation.updatedAt = Date.now();
     await conversation.save();
     return conversation;
   }
@@ -127,7 +126,6 @@ class ConversationService {
     // Persist both messages
     conversation.messages.push({ role: 'user', content: question });
     conversation.messages.push({ role: 'assistant', content: answer, sources });
-    conversation.updatedAt = Date.now();
     await conversation.save();
 
     return { answer, sources };
@@ -148,7 +146,6 @@ class ConversationService {
     }
 
     conversation.documentIds = documentIds;
-    conversation.updatedAt = new Date();
     await conversation.save({ validateModifiedOnly: true });
     await conversation.populate('documentIds', '_id originalName status');
     return conversation;

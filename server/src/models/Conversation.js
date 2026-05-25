@@ -45,19 +45,11 @@ const conversationSchema = new mongoose.Schema({
     }
   },
   messages: [messageSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
   organizationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization',
     required: true,
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Conversation', conversationSchema);
