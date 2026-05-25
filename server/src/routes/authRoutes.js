@@ -14,13 +14,6 @@ router.get('/refresh-token', authMiddleware, authController.refreshToken.bind(au
 router.post('/forgot-password', authLimiter, validate(forgotPassword), authController.forgotPassword.bind(authController));
 router.post('/reset-password', authLimiter, validate(resetPassword), authController.resetPassword.bind(authController));
 
-// Test routes for verification
-router.get('/protected', authMiddleware, (req, res) => {
-  res.status(200).json({ message: 'You have access to this protected route', user: req.user });
-});
 
-router.get('/admin', authMiddleware, adminMiddleware, (req, res) => {
-  res.status(200).json({ message: 'You have access to this admin route', user: req.user });
-});
 
 module.exports = router;

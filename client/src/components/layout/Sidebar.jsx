@@ -9,7 +9,6 @@ import SkeletonRow from '../ui/SkeletonRow';
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, avatar, logout, organizationName } = useAuth();
-  console.log('[Sidebar] avatar from useAuth:', avatar ? 'EXISTS' : 'NULL');
   const navigate = useNavigate();
   const { id: activeConversationId } = useParams();
   const { conversations, loading, createConversation, deleteConversation, renameConversation } = useConversations();

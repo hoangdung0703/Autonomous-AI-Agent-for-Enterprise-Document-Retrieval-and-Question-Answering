@@ -25,9 +25,6 @@ export function useProfile() {
     setError(null);
     try {
       const { data } = await api.patch('/users/me', { name, avatar });
-      console.log('[useProfile] API response:', data);
-      console.log('[useProfile] avatar in response:', data.user?.avatar ? 'EXISTS (length: ' + data.user.avatar.length + ')' : 'NULL');
-      console.log('[useProfile] storing archon_avatar:', data.user?.avatar ? 'YES' : 'NO');
       setProfile(prev => ({ ...prev, name, avatar: avatar || prev?.avatar }));
       if (data.user?.avatar !== undefined) {
         localStorage.setItem('archon_avatar', data.user.avatar || '');

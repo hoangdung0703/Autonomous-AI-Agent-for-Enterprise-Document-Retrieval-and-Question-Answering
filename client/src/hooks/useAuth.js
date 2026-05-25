@@ -30,9 +30,6 @@ export function useAuth() {
 
   useEffect(() => {
     const handleAuthUpdate = () => {
-      console.log('[useAuth] auth-updated fired');
-      console.log('[useAuth] archon_avatar in localStorage:', localStorage.getItem('archon_avatar') ? 'EXISTS' : 'NULL');
-      console.log('[useAuth] setting avatar state to:', localStorage.getItem('archon_avatar') ? 'IMAGE' : 'NULL');
       const token = localStorage.getItem('archon_token');
       if (token) {
         setUser(jwtDecode(token));
