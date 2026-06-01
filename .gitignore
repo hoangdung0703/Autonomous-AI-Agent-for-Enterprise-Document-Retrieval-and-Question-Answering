@@ -35,3 +35,4 @@ requirements.md
 server/test-*.js
 server/migrate*.js
 server/drop-*.js
+docs/
