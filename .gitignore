@@ -37,3 +37,4 @@ server/migrate*.js
 server/drop-*.js
 docs/
 .antigravitycli/
+.antigravitycli/
